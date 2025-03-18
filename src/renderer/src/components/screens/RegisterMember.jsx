@@ -155,9 +155,9 @@ const RegisterMember = () => {
               </div>
             </div>
 
-            <button onClick={handleSubmit} className="bg-zinc-500 hover:bg-zinc-600 text-white py-2 px-4 rounded">
+            <div onClick={handleSubmit} className="bg-zinc-500 cursor-pointer hover:bg-zinc-600 text-white py-2 px-4 w-fit rounded">
               Cadastrar
-            </button>
+            </div>
           </form>
         </div>
       </div>
