@@ -8,10 +8,15 @@ import { useState } from "react";
 export const Sidebar = () => {
   const [modalShow, setModalShow] = useState()
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate('/');
+  }
+
   const navigate = useNavigate();
   return (
     <>
-      <ModalDefault modalShow={modalShow} setModalShow={setModalShow} headerTitle="Sair" bodyMessage={"Você tem certeza que deseja sair?"} btnDanger={()=>navigate('/')} btnDangerText={'Sair'}/>
+      <ModalDefault modalShow={modalShow} setModalShow={setModalShow} headerTitle="Sair" bodyMessage={"Você tem certeza que deseja sair?"} btnDanger={()=>handleLogout()} btnDangerText={'Sair'}/>
       <div className="w-3/12 h-full bg-zinc-900 flex flex-col items-center justify-start">
         <div className="flex flex-col items-center justify-center gap-4 p-4">
           <img src={logo} alt="logo" className="w-8/12" />
