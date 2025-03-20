@@ -1,38 +1,72 @@
-import { useState } from 'react';
-import { HorizontalDivider } from './HorizontalDivider';
-import { IoMdClose } from "react-icons/io";
+import { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
+import { IoMdClose } from 'react-icons/io';
+import HorizontalDivider from './HorizontalDivider';
 
-export const Modal = ({ headerTitle, bodyMessage, btnDanger, btnConfirm, btnDangerText, btnConfirmText, modalShow, setModalShow}) => {
+const Modal = ({ title, subtitle, onConfirm, onCancel, onClose, isAlert }) => {
+  const modalRoot = document.createElement("div");
+  modalRoot.id = "modal-root";
 
-  if (!modalShow) return null;
+  useEffect(() => {
+    document.body.appendChild(modalRoot);
+    return () => {
+      document.body.removeChild(modalRoot);
+    };
+  }, []);
 
-  return (
-    <div
-      onClick={() => setModalShow(false)}
-      className="absolute w-screen h-screen z-10 bg-zinc-950/90 top-0 left-0 flex justify-center items-center"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="p-5 bg-zinc-800 rounded-lg flex flex-col z-20"
-      >
+  return ReactDOM.createPortal(
+    <div onClick={onClose} className="absolute bg-slate-950/80 w-screen h-screen flex justify-center items-center top-0 left-0 text-zinc-100">
+      <div onClick={(e)=>e.stopPropagation()} className="p-5 bg-zinc-800 rounded-lg flex flex-col z-20">
         <header className='mb-3 relative'>
-          <h1 className='font-bold max-w-[97%] overflow-hidden'>{headerTitle}</h1>
-          <IoMdClose onClick={() => setModalShow(false)} className='absolute top-1 right-1 cursor-pointer' />
+          <h1 className='font-bold max-w-[97%] overflow-hidden'>{title}</h1>
+          <IoMdClose onClick={onClose} className='absolute top-1 right-1 cursor-pointer text-zinc-100' />
         </header>
         <HorizontalDivider />
-        <main className='text-zinc-300 mb-5'>{bodyMessage}</main>
-        <footer className='flex justify-end items-center gap-2'>
-          {btnDanger &&
-            <div onClick={()=> btnDanger()} className='bg-red-800 p-2 w-fit px-5 rounded-md text-sm cursor-pointer'>{btnDangerText}</div>
-          }
-          {btnConfirm &&
-            <div onClick={()=>btnConfirm()} className='bg-blue-800 p-2 w-fit px-5 rounded-md text-sm cursor-pointer'>{btnConfirmText}</div>
-          }
+        <main className='text-zinc-300 mb-5'>{subtitle}</main>
+
+
+        <footer className="flex justify-end items-center gap-2">
+          {isAlert ? (
+            <div onClick={onClose} className='bg-blue-800 p-2 w-fit px-5 rounded-md text-sm cursor-pointer'>Ok</div>
+          ) : (
+            <>
+              <div onClick={onCancel} className='bg-red-800 p-2 w-fit px-5 rounded-md text-sm cursor-pointer'>Cancelar</div>
+              <div onClick={onConfirm} className='bg-blue-800 p-2 w-fit px-5 rounded-md text-sm cursor-pointer'>Confirmar</div>
+            </>
+          )}
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-}
+};
+
+const useModal = () => {
+  const [modalProps, setModalProps] = useState(null);
+
+  const modalConfirm = (title, subtitle, onConfirm = () => { }, onCancel = () => { }) => {
+    setModalProps({ title, subtitle, onConfirm, onCancel, isAlert: false });
+  };
+
+  const modalAlert = (title, subtitle, onClose = () => { }) => {
+    setModalProps({ title, subtitle, onClose, isAlert: true });
+  };
 
 
-export default Modal
+  const closeModal = () => setModalProps(null);
+
+  return {
+    modal: modalProps ? (
+      <Modal
+        {...modalProps}
+        onConfirm={() => { modalProps.onConfirm(); closeModal(); }}
+        onCancel={() => { modalProps.onCancel(); closeModal(); }}
+        onClose={() => { modalProps.onClose(); closeModal(); }}
+      />
+    ) : null,
+    modalConfirm,
+    modalAlert
+  };
+};
+
+export default useModal;

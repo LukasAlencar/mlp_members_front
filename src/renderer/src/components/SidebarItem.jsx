@@ -2,8 +2,6 @@ import { useNavigate } from "react-router";
 
 export const SidebarItem = ({ icon, value, onClick, hoverBg }) => {
 
-  const navigate = useNavigate();
-
   var color;
 
   switch(hoverBg){
