@@ -2,23 +2,24 @@ import { useNavigate } from "react-router";
 
 export const SidebarItem = ({ icon, value, onClick, hoverBg }) => {
 
-  var color;
 
-  switch(hoverBg){
-    case "danger":
-      color = "red"
-      break;
-    default:
-      color = "zinc"
-      break;
+  if (hoverBg == 'danger') {
+    return (
+      <a onClick={onClick} className={`cursor-pointer flex justify-start items-center gap-3 w-full py-2 px-4 hover:bg-red-800`}>
+        {icon && icon}
+        {value && value}
+      </a>
+    )
+  } else {
+
+    return (
+      <a onClick={onClick} className={`cursor-pointer flex justify-start items-center gap-3 w-full py-2 px-4 hover:bg-zinc-800`}>
+        {icon && icon}
+        {value && value}
+      </a>
+    )
   }
 
-  return (
-    <a onClick={onClick} className={`cursor-pointer flex justify-start items-center gap-3 w-full py-2 px-4 hover:bg-${color}-800`}>
-      {icon && icon}
-      {value && value}
-    </a>
-  )
 }
 
 

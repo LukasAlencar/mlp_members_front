@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { IoMdClose } from 'react-icons/io';
 import HorizontalDivider from './HorizontalDivider';
 
-const Modal = ({ title, subtitle, onConfirm, onCancel, onClose, isAlert }) => {
+const Modal = ({ title, subtitle, onCancel, onConfirm, onClose, isAlert }) => {
   const modalRoot = document.createElement("div");
   modalRoot.id = "modal-root";
 
@@ -44,8 +44,8 @@ const Modal = ({ title, subtitle, onConfirm, onCancel, onClose, isAlert }) => {
 const useModal = () => {
   const [modalProps, setModalProps] = useState(null);
 
-  const modalConfirm = (title, subtitle, onConfirm = () => { }, onCancel = () => { }) => {
-    setModalProps({ title, subtitle, onConfirm, onCancel, isAlert: false });
+  const modalConfirm = (title, subtitle, onCancel = () => { }, onConfirm = () => { }) => {
+    setModalProps({ title, subtitle, onCancel, onConfirm, isAlert: false });
   };
 
   const modalAlert = (title, subtitle, onClose = () => { }) => {
