@@ -22,7 +22,7 @@ const Modal = ({ title, subtitle, onCancel, onConfirm, onClose, isAlert }) => {
           <IoMdClose onClick={onClose} className='absolute top-1 right-1 cursor-pointer text-zinc-100' />
         </header>
         <HorizontalDivider />
-        <main className='text-zinc-300 mb-5'>{subtitle}</main>
+        <main className='text-zinc-300 mb-5'>{(subtitle)}</main>
 
 
         <footer className="flex justify-end items-center gap-2">
