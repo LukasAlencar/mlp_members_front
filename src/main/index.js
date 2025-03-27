@@ -10,6 +10,7 @@ function createWindow() {
     height: 670,
     show: false,
     maximizable: true,
+    icon: join(__dirname, '../../resources/icon.ico'),
     title: 'MLP Membros',
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -18,7 +19,6 @@ function createWindow() {
       sandbox: false
     }
   })
-
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.maximize()
@@ -33,9 +33,9 @@ function createWindow() {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    mainWindow.loadURL(`file://${join(app.getAppPath(), 'out/renderer/index.html')}`)
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadURL(`file://${join(app.getAppPath(), 'out/renderer/index.html')}`)
   }
 }
 
@@ -44,7 +44,7 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('com.mlpmembers')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

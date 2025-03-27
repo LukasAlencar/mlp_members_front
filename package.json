@@ -1,10 +1,10 @@
 {
   "name": "mlp_members",
   "version": "1.0.0",
-  "description": "An Electron application with React",
+  "description": "Aplicativo de controle de membros do ministério luz da palavra",
   "main": "./out/main/index.js",
   "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "homepage": "https://lucasalencar.cloud",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",

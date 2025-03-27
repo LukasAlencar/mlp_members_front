@@ -1,5 +1,3 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
 import Login from './components/Login'
 
 function App() {

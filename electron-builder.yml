@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: mlp_members
+appId: com.mlpmembers.app
+productName: MLP Members
 directories:
   buildResources: build
 files:
@@ -11,12 +11,18 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: mlp_members
+  executableName: MLP Members
+  icon: build/icon.ico
 nsis:
+  oneClick: false
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  createStartMenuShortcut: true
+  allowToChangeInstallationDirectory: true
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
