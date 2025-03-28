@@ -9,7 +9,7 @@ const validateName = (name) => {
 
 const validateCpf = (cpf) => {
   const regex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
-  return regex.test(cpf) ? '' : 'CPF inválido (formato correto: 000.000.000-00)';
+  return regex.test(cpf) ? '' : 'CPF inválido (000.000.000-00)';
 };
 
 const validateRG = (rg) => {

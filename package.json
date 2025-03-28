@@ -1,9 +1,9 @@
 {
   "name": "mlp_members",
   "version": "1.0.0",
-  "description": "Aplicativo de controle de membros do ministério luz da palavra",
+  "description": "Aplicativo de controle de membros do ministério Luz da Palavra",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": "Alencar's Org",
   "homepage": "https://lucasalencar.cloud",
   "scripts": {
     "format": "prettier --write .",
@@ -27,7 +27,8 @@
     "lottie-react": "^2.4.1",
     "react-icons": "^5.5.0",
     "react-input-mask": "^2.0.4",
-    "react-router": "^7.3.0"
+    "react-router": "^7.3.0",
+    "recharts": "^2.15.1"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^2.0.0",

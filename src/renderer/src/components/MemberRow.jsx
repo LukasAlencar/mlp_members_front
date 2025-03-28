@@ -11,15 +11,12 @@ import { validateBirthDate, validateCpf, validateEmail, validateImage, validateN
 import { TbPhotoSquareRounded } from "react-icons/tb";
 import { TbPhotoEdit } from "react-icons/tb";
 import cuid from "cuid";
+import { formatDate } from './../utils/utils';
 
 
 
 export const MemberRow = ({ member, index, onRemove }) => {
 
-  const formatDate = (date) => {
-    const newDate = new Date(date);
-    return newDate.toLocaleDateString();
-  }
   const fileInputRef = useRef(null);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -129,7 +126,7 @@ export const MemberRow = ({ member, index, onRemove }) => {
       role: validateRole(memberEdited.role.toLowerCase()),
       phone: validatePhone(memberEdited.phone),
       rg: validateRG(memberEdited.rg),
-      image: await validateImage(memberEdited.image),
+      image: memberEdited.imagePath && !memberEdited.image ? '' : await validateImage(memberEdited.image),
     };
 
     const filteredErrors = Object.fromEntries(
@@ -144,10 +141,14 @@ export const MemberRow = ({ member, index, onRemove }) => {
     };
 
     if (Object.keys(filteredErrors).length > 0) {
-      setErrors(filteredErrors);
-      console.log(filteredErrors)
+      let message = "Verifique os campos destacados";
 
-      modalAlert("Erro ao editar membro", "Verifique os campos destacados", () => {
+      if (filteredErrors.image) {
+        message = filteredErrors.image;
+      }
+      setErrors(filteredErrors);
+
+      modalAlert("Erro ao editar membro", message, () => {
         focusFirstError();
       });
 
@@ -162,7 +163,7 @@ export const MemberRow = ({ member, index, onRemove }) => {
     const formData = new FormData();
 
     formData.append("id", member.id);
-    formData.append("name", member.name);
+    formData.append("name", memberEdited.name);
 
     memberEdited.email && formData.append("email", memberEdited.email);
 
@@ -184,7 +185,7 @@ export const MemberRow = ({ member, index, onRemove }) => {
     try {
       const { data } = await axios.put(base_url + "member/" + member.id, formData, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
       console.log(data);
-      modalAlert("Membro atualizado", <p className="">Membro <span className="text-yellow-500">{member.name}</span> atualizado com sucesso</p>);
+      modalAlert("Membro atualizado", <p className="">Membro <span className="text-yellow-500">{memberEdited.name}</span> atualizado com sucesso</p>);
       setIsEditing(false);
     } catch (err) {
       modalAlert("Erro ao atualizar membro", err.response?.data?.message || "Erro ao atualizar membro");
@@ -210,15 +211,15 @@ export const MemberRow = ({ member, index, onRemove }) => {
     return (
       <tr className={index % 2 === 0 ? "bg-zinc-900" : "bg-zinc-800"}>
         {modal}
-        <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{member.name}</td>
-        <td className="px-4 text-center py-2 border border-zinc-700">{formatRole(member.role)}</td>
-        <td className="px-4 text-center py-2 border border-zinc-700">{member.email}</td>
-        <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{member.cpf}</td>
-        <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{member.rg}</td>
-        <td className="px-4 text-center min-w-[170px] py-2 border border-zinc-700">{member.phone}</td>
-        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(member.baptismDate)}</td>
-        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(member.birthDate)}</td>
-        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(member.memberSince)}</td>
+        <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{memberEdited.name}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{formatRole(memberEdited.role)}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{memberEdited.email}</td>
+        <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{memberEdited.cpf}</td>
+        <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{memberEdited.rg}</td>
+        <td className="px-4 text-center min-w-[170px] py-2 border border-zinc-700">{memberEdited.phone}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(memberEdited.baptismDate)}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(memberEdited.birthDate)}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(memberEdited.memberSince)}</td>
         <td className="px-4 text-center min-w-[50px] py-2 border border-zinc-700">
           <div className="w-full h-full flex justify-center items-center">
             <TbPhotoSquareRounded size={23} className="hover:text-blue-500 cursor-pointer" onClick={viewImage} />

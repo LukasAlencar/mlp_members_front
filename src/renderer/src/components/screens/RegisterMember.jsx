@@ -169,7 +169,7 @@ const RegisterMember = () => {
                     {errors.name && <p className="text-red-400 text-xs">{errors.name}</p>}
                   </div>
                 </div>
-                <div>
+                <div className='w-4/12'>
                   <label className="text-white block mb-2" htmlFor="cpf">CPF *</label>
                   <InputMask
                     className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.cpf ? 'red' : 'zinc'}-700`}
@@ -201,7 +201,7 @@ const RegisterMember = () => {
                     {errors.email && <p className="text-red-400 text-xs mt-2">{errors.email}</p>}
                   </div>
                 </div>
-                <div>
+                <div className='w-4/12'>
                   <label className="text-white block mb-2" htmlFor="rg">RG *</label>
                   <InputMask
                     className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.rg ? 'red' : 'zinc'}-700`}
