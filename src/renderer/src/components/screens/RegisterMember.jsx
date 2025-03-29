@@ -7,6 +7,8 @@ import { base_url } from '../../services/config';
 import useModal from '../Modal';
 import { validateBirthDate, validateCpf, validateEmail, validateImage, validateName, validatePhone, validateRG, validateRole } from '../../hooks/validateFields';
 import cuid from 'cuid';
+import { useNavigate } from 'react-router';
+import { ImageTerm } from './ImageTerm';
 
 const RegisterMember = () => {
   const [member, setMember] = useState({
@@ -19,7 +21,8 @@ const RegisterMember = () => {
     memberSince: '',
     role: '',
     image: null,
-    phone: ''
+    phone: '',
+    acceptTerms: false,
   });
 
   const { modalAlert, modal } = useModal();
@@ -28,9 +31,13 @@ const RegisterMember = () => {
 
   const [errors, setErrors] = useState({});
 
+  const [showTerm, setShowTerm] = useState(false);
+
+  const navigate = useNavigate();
+
   const handleChange = async (e) => {
-    const { name, value, type, files } = e.target;
-    const newValue = type === 'file' ? files[0] : value;
+    const { name, value, checked, type, files } = e.target;
+    const newValue = type === 'file' ? files[0] : type === 'checkbox' ? checked : value;
 
     setMember((prevMember) => ({
       ...prevMember,
@@ -113,11 +120,15 @@ const RegisterMember = () => {
     formData.append("rg", member.rg);
     formData.append("role", member.role.toUpperCase());
     formData.append("phone", member.phone);
+    formData.append("acceptTerms", member.acceptTerms);
+
 
     // Adiciona a imagem, se existir
     if (member.image) {
       formData.append("image", member.image);
     }
+
+    console.log(member)
 
     try {
       const res = await axios.post(base_url + "member", formData, {
@@ -131,6 +142,17 @@ const RegisterMember = () => {
     } catch (err) {
       console.log(err);
 
+      const erro_code = err.response?.data?.message?.code;
+      const target = err.response?.data?.message?.meta?.target[0];
+
+
+      console.log(erro_code);
+
+      if (erro_code === "P2002") {
+        modalAlert("Erro", `Já existe um membro cadastrado com esse ${target.toUpperCase()}`, () => { })
+        return;
+      }
+
       modalAlert(
         "Erro",
         typeof err.response?.data?.error === "string"
@@ -141,7 +163,9 @@ const RegisterMember = () => {
     }
   };
 
-
+  const handleCloseTerm = () => {
+    setShowTerm(false);
+  }
 
   return (
     <>
@@ -149,6 +173,8 @@ const RegisterMember = () => {
       {modal}
       <div className="w-screen h-screen text-zinc-100 flex">
         <Sidebar />
+        {!showTerm ? (
+
         <div className="bg-zinc-950 min-h-screen flex items-center w-full justify-center p-5">
           <div className="bg-zinc-900 p-8 rounded-lg shadow-lg flex flex-col">
             <h2 className="text-2xl text-white mb-4">Cadastrar membro</h2>
@@ -296,7 +322,7 @@ const RegisterMember = () => {
                   </div>
                 </div>
                 <div className='w-4/12'>
-                  <label className="text-white block mb-2" htmlFor="rg">Phone *</label>
+                  <label className="text-white block mb-2" htmlFor="rg">Telefone *</label>
                   <InputMask
                     className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.phone ? 'red' : 'zinc'}-700`}
                     mask="(99) 99999-9999"
@@ -312,13 +338,27 @@ const RegisterMember = () => {
 
                 </div>
               </div>
-
-              <div onClick={handleSubmit} className="bg-zinc-500 cursor-pointer hover:bg-zinc-600 text-white py-2 px-4 w-fit rounded">
-                Cadastrar
+              <div className='w-full flex items-center justify-between'>
+                <div onClick={handleSubmit} className="bg-zinc-500 cursor-pointer hover:bg-zinc-600 text-white py-2 px-4 w-fit rounded">
+                  Cadastrar
+                </div>
+                <div className='flex flex-col'>
+                  <div className='flex items-center gap-2'>
+                    <p>Aceita o <span onClick={()=>setShowTerm(true)} className='underline text-blue-500 cursor-pointer'>termo</span> de uso de imagem?</p>
+                    <input name="acceptTerms" onChange={handleChange} checked={member.acceptTerms || false} type="checkbox" />
+                  </div>
+                  <p className='text-xs text-zinc-500'>Solicite ao membro que ele leia e marque o checkbox</p>
+                </div>
               </div>
             </form>
           </div>
         </div>
+        )
+        :
+        (
+          <ImageTerm name={member.name} cpf={member.cpf} handleCloseTerm={()=>handleCloseTerm()}></ImageTerm>
+        )
+      }
       </div>
     </>
 

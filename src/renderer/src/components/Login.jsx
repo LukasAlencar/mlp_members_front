@@ -54,7 +54,7 @@ export const Login = () => {
 
   return (
     <div className="w-full h-full flex flex-col gap-2 justify-center items-center">
-      <section className="bg-zinc-800 rounded-lg p-5 flex flex-col justify-center items-center">
+      <section className="bg-zinc-800 w-4/12 rounded-lg p-5 flex flex-col justify-center items-center">
         <img src={logo} alt="mlp-membros" className="mb-5" />
         <span className="w-full border border-zinc-700 mb-5"></span>
         <h1 className="text-3xl font-bold mb-5">Entrar</h1>
@@ -85,12 +85,6 @@ export const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </div>
-          <div className="flex justify-start items-center gap-2 mt-3">
-            <input className="accent-zinc-600" type="checkbox" name="remember" id="remember" />
-            <label className="text-zinc-400" htmlFor="remember">
-              Lembre-me
-            </label>
           </div>
           <button
             onClick={handleLogin}

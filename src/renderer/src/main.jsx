@@ -8,6 +8,7 @@ import Home from './components/screens/Home';
 import RegisterMember from './components/screens/RegisterMember';
 import ProtectedRoute from './components/screens/ProtectedRoute';
 import ListMembers from './components/screens/ListMembers';
+import ImageTerm from './components/screens/ImageTerm';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <HashRouter>
@@ -17,6 +18,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/home" element={<Home />} />
         <Route path="/registerMember" element={<RegisterMember />} />
         <Route path="/listMembers" element={<ListMembers />} />
+        <Route path="/ImageTerm" element={<ImageTerm />} />
       </Route>
     </Routes>
   </HashRouter>

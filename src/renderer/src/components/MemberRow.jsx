@@ -11,11 +11,13 @@ import { validateBirthDate, validateCpf, validateEmail, validateImage, validateN
 import { TbPhotoSquareRounded } from "react-icons/tb";
 import { TbPhotoEdit } from "react-icons/tb";
 import cuid from "cuid";
-import { formatDate } from './../utils/utils';
+import { formatDate, formatDatePTBR } from './../utils/utils';
 
 
 
 export const MemberRow = ({ member, index, onRemove }) => {
+
+  console.log(member)
 
   const fileInputRef = useRef(null);
 
@@ -28,8 +30,8 @@ export const MemberRow = ({ member, index, onRemove }) => {
   const inputRefs = useRef({});
 
   const handleChange = async (e) => {
-    const { name, value, type, files } = e.target;
-    const newValue = type === 'file' ? files[0] : value;
+    const { name, value, type, files, checked } = e.target;
+    const newValue = type === 'file' ? files[0] : type === 'checkbox' ? checked : value;
 
     setMemberEdited((prev) => ({ ...prev, [name]: newValue }));
 
@@ -168,14 +170,29 @@ export const MemberRow = ({ member, index, onRemove }) => {
     memberEdited.email && formData.append("email", memberEdited.email);
 
     formData.append("cpf", memberEdited.cpf);
-    formData.append("birthDate", memberEdited.birthDate);
 
-    memberEdited.baptismDate && formData.append("baptismDate", memberEdited.baptismDate);
-    memberEdited.memberSince && formData.append("memberSince", memberEdited.memberSince);
+
+    var birthdate = memberEdited.birthDate
+
+    if(!memberEdited.birthDate.includes('T00:00:00')) {
+      birthdate += 'T00:00:00Z';
+    }
+
+    formData.append("birthDate", birthdate);
+
+    if (memberEdited.baptismDate && !memberEdited.baptismDate.includes('T00:00:00')) {
+      formData.append("baptismDate", memberEdited.baptismDate + 'T00:00:00Z');
+    }
+
+    if (memberEdited.memberSince && !memberEdited.memberSince.includes('T00:00:00')) {
+      memberEdited.memberSince && formData.append("memberSince", memberEdited.memberSince + 'T00:00:00Z');
+    }
 
     formData.append("rg", memberEdited.rg);
     formData.append("role", memberEdited.role.toUpperCase());
     formData.append("phone", memberEdited.phone);
+
+    formData.append("acceptTerms", memberEdited.acceptTerms == "true" ? true : false);
 
     // Adiciona a imagem, se existir
     if (memberEdited.image) {
@@ -207,6 +224,8 @@ export const MemberRow = ({ member, index, onRemove }) => {
       inputRefs.current['image'].click();
     }
   };
+
+  console.log(member)
   if (!isEditing) {
     return (
       <tr className={index % 2 === 0 ? "bg-zinc-900" : "bg-zinc-800"}>
@@ -217,9 +236,10 @@ export const MemberRow = ({ member, index, onRemove }) => {
         <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{memberEdited.cpf}</td>
         <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{memberEdited.rg}</td>
         <td className="px-4 text-center min-w-[170px] py-2 border border-zinc-700">{memberEdited.phone}</td>
-        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(memberEdited.baptismDate)}</td>
-        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(memberEdited.birthDate)}</td>
-        <td className="px-4 text-center py-2 border border-zinc-700">{formatDate(memberEdited.memberSince)}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{formatDatePTBR(memberEdited.baptismDate)}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{formatDatePTBR(memberEdited.birthDate)}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{formatDatePTBR(memberEdited.memberSince)}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{memberEdited.acceptTerms ? 'Sim' : 'Não'}</td>
         <td className="px-4 text-center min-w-[50px] py-2 border border-zinc-700">
           <div className="w-full h-full flex justify-center items-center">
             <TbPhotoSquareRounded size={23} className="hover:text-blue-500 cursor-pointer" onClick={viewImage} />
@@ -332,6 +352,15 @@ export const MemberRow = ({ member, index, onRemove }) => {
             type="date"
             name="memberSince"
             value={memberEdited.memberSince ? new Date(memberEdited.memberSince).toISOString().split('T')[0] : ''}
+            className="bg-zinc-700 text-white rounded w-full py-2 px-3"
+            onChange={handleChange}
+          />
+        </td>
+        <td className="px-4 text-center py-2 border border-zinc-700">
+          <input
+            type="checkbox"
+            name="acceptTerms"
+            checked={memberEdited.acceptTerms}
             className="bg-zinc-700 text-white rounded w-full py-2 px-3"
             onChange={handleChange}
           />
