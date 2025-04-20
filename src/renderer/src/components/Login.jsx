@@ -47,7 +47,6 @@ export const Login = () => {
       localStorage.setItem('token', res.data.token);
       navigate('/home');
     } catch (err) {
-      console.log(err.response.data);
       setError(err.response.data.message);
     }
   };

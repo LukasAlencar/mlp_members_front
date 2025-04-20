@@ -11,3 +11,23 @@ export const formatDatePTBR = (date) => {
 
     return `${day}/${month}/${year}`;
 }
+
+export const formatRole = (role) => {
+  var role_lower = role.toLowerCase();
+
+  switch (role_lower) {
+    case "pastor":
+      return "Pastor";
+    case "deacon":
+      return "Diácono";
+    case "member":
+      return "Membro";
+    case "elder":
+      return "Presbítero";
+    case "auxiliary":
+      return "Auxiliar";
+    default:
+      return "Membro";
+  }
+
+}

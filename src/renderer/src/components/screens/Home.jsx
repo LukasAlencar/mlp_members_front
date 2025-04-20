@@ -122,7 +122,6 @@ export const Home = () => {
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
-      console.log(payload)
       return (
         <div className="h-32 w-32 bg-zinc-800/50 rounded-lg p-2 flex flex-col items-center justify-center">
           {payload.map((item, index) => (

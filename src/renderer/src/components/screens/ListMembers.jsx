@@ -22,7 +22,6 @@ export const ListMembers = () => {
         const { data } = await axios.get(base_url + "member", { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
         setMembers(data);
       } catch (err) {
-        console.log(err)
         setError(err.response?.data?.message || "Erro ao buscar membros");
       } finally {
         setLoading(false);
@@ -128,7 +127,7 @@ export const ListMembers = () => {
                       <th className="px-4 py-2 border border-zinc-700">Nascimento</th>
                       <th className="px-4 py-2 border border-zinc-700">Membro Desde</th>
                       <th className="px-4 py-2 border border-zinc-700">Termos de Imagem</th>
-                      <th className="px-4 py-2 border border-zinc-700">Imagem</th>
+                      <th className="px-4 py-2 border border-zinc-700">Carteira de Membro</th>
                       <th className="px-4 py-2 border border-zinc-700">Ações</th>
                     </tr>
                   </thead>

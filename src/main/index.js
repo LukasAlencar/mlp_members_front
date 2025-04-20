@@ -2,6 +2,47 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { spawn } from 'child_process';
+import log from 'electron-log'
+
+// let backendProcess;
+
+// function startBackend() {
+//   const isDev = !app.isPackaged
+//   log.info(`Iniciando backend em: ${isDev ? 'desenvolvimento' : 'produção'}`)
+
+//   const backendPath = isDev ? join(__dirname, '../../backend/build/src/index.js') : join(process.resourcesPath, 'backend', 'build/src/index.js');
+
+//   log.info(`Backend path: ${backendPath}`)
+
+//   console.log(`Iniciando backend em: ${backendPath}`);
+
+//   backendProcess = spawn('node', [backendPath], {
+//     stdio: ['ignore', 'pipe', 'pipe'],
+//     detached: false
+//   });
+
+//   backendProcess.stdout.on('data', (data) => {
+//     console.log(`Backend: ${data}`);
+//     log.info(`Backend: ${data}`);
+
+//   });
+
+//   backendProcess.stderr.on('data', (data) => {
+//     console.error(`Erro no backend: ${data}`);
+//     log.info(`Erro Backend: ${data}`);
+
+//   });
+// }
+
+// function stopBackend() {
+//   if (backendProcess) {
+//     console.log('Encerrando backend...');
+//     log.info(`Encerrando backend...`);
+//     backendProcess.kill('SIGTERM');
+//     backendProcess = null;
+//   }
+// }
 
 function createWindow() {
   // Create the browser window.
@@ -21,6 +62,8 @@ function createWindow() {
   })
 
   mainWindow.on('ready-to-show', () => {
+    // startBackend();
+
     mainWindow.maximize()
     mainWindow.show()
   })
@@ -53,10 +96,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
-
   createWindow()
 
   app.on('activate', function () {
@@ -71,9 +110,15 @@ app.whenReady().then(() => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    // stopBackend();
     app.quit()
   }
+
 })
+
+// app.on('quit', () => {
+  // stopBackend();
+// });
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.

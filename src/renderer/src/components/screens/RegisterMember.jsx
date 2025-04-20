@@ -128,7 +128,6 @@ const RegisterMember = () => {
       formData.append("image", member.image);
     }
 
-    console.log(member)
 
     try {
       const res = await axios.post(base_url + "member", formData, {
@@ -140,13 +139,9 @@ const RegisterMember = () => {
 
       setModalShow(true);
     } catch (err) {
-      console.log(err);
 
       const erro_code = err.response?.data?.message?.code;
       const target = err.response?.data?.message?.meta?.target[0];
-
-
-      console.log(erro_code);
 
       if (erro_code === "P2002") {
         modalAlert("Erro", `Já existe um membro cadastrado com esse ${target.toUpperCase()}`, () => { })

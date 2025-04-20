@@ -11,13 +11,13 @@ import { validateBirthDate, validateCpf, validateEmail, validateImage, validateN
 import { TbPhotoSquareRounded } from "react-icons/tb";
 import { TbPhotoEdit } from "react-icons/tb";
 import cuid from "cuid";
-import { formatDate, formatDatePTBR } from './../utils/utils';
+import { formatDate, formatDatePTBR, formatRole } from './../utils/utils';
+import MembershipCard from "./MembershipCard";
 
 
 
 export const MemberRow = ({ member, index, onRemove }) => {
 
-  console.log(member)
 
   const fileInputRef = useRef(null);
 
@@ -71,26 +71,6 @@ export const MemberRow = ({ member, index, onRemove }) => {
     }));
   };
 
-  const formatRole = (role) => {
-    var role_lower = role.toLowerCase();
-
-    switch (role_lower) {
-      case "pastor":
-        return "Pastor";
-      case "deacon":
-        return "Diácono";
-      case "member":
-        return "Membro";
-      case "elder":
-        return "Presbítero";
-      case "auxiliary":
-        return "Auxiliar";
-      default:
-        return "Membro";
-    }
-
-  }
-
   const { modalConfirm, modal, modalAlert } = useModal();
 
   const handleRemove = () => {
@@ -108,7 +88,6 @@ export const MemberRow = ({ member, index, onRemove }) => {
   const removeMember = async () => {
     try {
       const { data } = await axios.delete(base_url + "member/" + member.id, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
-      console.log(data)
       setTimeout(() => {
         modalAlert("Membro removido", `Membro ${member.name} removido com sucesso`);
         onRemove(member.id);
@@ -201,7 +180,6 @@ export const MemberRow = ({ member, index, onRemove }) => {
 
     try {
       const { data } = await axios.put(base_url + "member/" + member.id, formData, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-      console.log(data);
       modalAlert("Membro atualizado", <p className="">Membro <span className="text-yellow-500">{memberEdited.name}</span> atualizado com sucesso</p>);
       setIsEditing(false);
     } catch (err) {
@@ -216,7 +194,8 @@ export const MemberRow = ({ member, index, onRemove }) => {
   }
 
   const viewImage = () => {
-    modalAlert(memberEdited.name, <img key={memberEdited.id} src={`${base_url}userImages/${memberEdited.id}.png`} alt={memberEdited.name} />);
+    modalAlert(memberEdited.name, <MembershipCard member={memberEdited} />);
+    // modalAlert(memberEdited.name, <img key={memberEdited.id} src={`${base_url}userImages/${memberEdited.id}.png`} alt={memberEdited.name} />);
   }
 
   const editPhoto = () => {
@@ -225,7 +204,6 @@ export const MemberRow = ({ member, index, onRemove }) => {
     }
   };
 
-  console.log(member)
   if (!isEditing) {
     return (
       <tr className={index % 2 === 0 ? "bg-zinc-900" : "bg-zinc-800"}>
