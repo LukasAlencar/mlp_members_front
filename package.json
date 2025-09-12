@@ -20,6 +20,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
+    "@react-pdf/renderer": "^4.3.0",
     "axios": "^1.8.3",
     "clsx": "^2.1.1",
     "cuid": "^3.0.0",
