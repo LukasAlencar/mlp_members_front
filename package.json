@@ -17,6 +17,10 @@
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux"
   },
+  "asarUnpack": [
+    "backend/**",
+    "node_modules/.prisma/**"
+  ],
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
@@ -32,7 +36,8 @@
     "react-icons": "^5.5.0",
     "react-input-mask": "^2.0.4",
     "react-router": "^7.3.0",
-    "recharts": "^2.15.1"
+    "recharts": "^2.15.1",
+    "tree-kill": "^1.2.2"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^2.0.0",

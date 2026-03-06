@@ -1,48 +1,258 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { spawn } from 'child_process';
 import log from 'electron-log'
+import fs from "fs";
+import kill from "tree-kill";
+import { fork } from "child_process";
 
-// let backendProcess;
 
-// function startBackend() {
-//   const isDev = !app.isPackaged
-//   log.info(`Iniciando backend em: ${isDev ? 'desenvolvimento' : 'produção'}`)
+let backendProcess;
+let backendStarted = false;
 
-//   const backendPath = isDev ? join(__dirname, '../../backend/build/src/index.js') : join(process.resourcesPath, 'backend', 'build/src/index.js');
+Object.assign(console, log.functions);
 
-//   log.info(`Backend path: ${backendPath}`)
+log.transports.file.resolvePathFn = () =>
+  path.join(app.getPath("userData"), "logs/main.log");
 
-//   console.log(`Iniciando backend em: ${backendPath}`);
+async function runMigrations(dbPath) {
+  return new Promise((resolve, reject) => {
+    const backendDir = app.isPackaged
+      ? path.join(process.resourcesPath, "backend")
+      : path.join(__dirname, "..", "..", "backend");
 
-//   backendProcess = spawn('node', [backendPath], {
-//     stdio: ['ignore', 'pipe', 'pipe'],
-//     detached: false
-//   });
+    const schemaPath = path.join(backendDir, "prisma", "schema.prisma");
 
-//   backendProcess.stdout.on('data', (data) => {
-//     console.log(`Backend: ${data}`);
-//     log.info(`Backend: ${data}`);
+    log.info("Executando migrations...");
+    log.info("Schema path:", schemaPath);
+    log.info("Database path:", dbPath);
 
-//   });
+    // Configurar environment para a migration
+    const env = Object.assign({}, process.env, {
+      DATABASE_URL: `file:${dbPath}`,
+      // 👇 IMPORTANTE: Evita criar novos processos Electron
+      ELECTRON_RUN_AS_NODE: "1"
+    });
 
-//   backendProcess.stderr.on('data', (data) => {
-//     console.error(`Erro no backend: ${data}`);
-//     log.info(`Erro Backend: ${data}`);
+    // 👇 USAR SPAWN AO INVÉS DE TENTAR EXECUTAR PRISMA DIRETAMENTE
+    const prismaPath = app.isPackaged
+      ? path.join(backendDir, "node_modules", ".bin", "prisma.cmd") // Windows precisa do .cmd
+      : path.join(backendDir, "node_modules", ".bin", "prisma");
 
-//   });
-// }
+    const args = ["migrate", "deploy", "--schema", schemaPath];
 
-// function stopBackend() {
-//   if (backendProcess) {
-//     console.log('Encerrando backend...');
-//     log.info(`Encerrando backend...`);
-//     backendProcess.kill('SIGTERM');
-//     backendProcess = null;
-//   }
-// }
+    const migrateProcess = spawn(prismaPath, args, {
+      env,
+      cwd: backendDir,
+      stdio: ["inherit", "pipe", "pipe"], // 👈 MUDOU AQUI
+      windowsHide: true // 👈 IMPORTANTE: Não mostra janela no Windows
+    });
+
+    let output = "";
+    let errorOutput = "";
+
+    migrateProcess.stdout.on("data", (data) => {
+      const message = data.toString();
+      output += message;
+      log.info(`[Prisma Migrate] ${message.trim()}`);
+    });
+
+    migrateProcess.stderr.on("data", (data) => {
+      const message = data.toString();
+      errorOutput += message;
+      log.error(`[Prisma Migrate Error] ${message.trim()}`);
+    });
+
+    migrateProcess.on("close", (code) => {
+      if (code === 0) {
+        log.info("Migrations executadas com sucesso!");
+        resolve(output);
+      } else {
+        log.error("Erro ao executar migrations:", errorOutput);
+        reject(new Error(`Migration failed with code ${code}: ${errorOutput}`));
+      }
+    });
+
+    migrateProcess.on("error", (error) => {
+      log.error("Erro ao iniciar processo de migration:", error);
+      reject(error);
+    });
+  });
+}
+
+async function createAdmin() {
+  return new Promise((resolve, reject) => {
+    const backendDir = app.isPackaged
+      ? path.join(process.resourcesPath, "backend")
+      : path.join(__dirname, "..", "..", "backend");
+
+    const createAdminScript = path.join(backendDir, "scripts", "create-admin.js");
+
+    log.info("Criando usuário admin...");
+    log.info("Script path:", createAdminScript);
+
+    // Configurar environment
+    const env = Object.assign({}, process.env, {
+      DATABASE_URL: `file:${ensureWritableDb()}`,
+      // 👇 IMPORTANTE: Força execução como Node
+      ELECTRON_RUN_AS_NODE: "1"
+    });
+
+    const adminProcess = spawn(process.execPath, [createAdminScript], {
+      env,
+      cwd: backendDir,
+      stdio: ["inherit", "pipe", "pipe"], // 👈 MUDOU AQUI
+      windowsHide: true // 👈 IMPORTANTE: Não mostra janela no Windows
+    });
+
+    let output = "";
+    let errorOutput = "";
+
+    adminProcess.stdout.on("data", (data) => {
+      const message = data.toString();
+      output += message;
+      log.info(`[Create Admin] ${message.trim()}`);
+    });
+
+    adminProcess.stderr.on("data", (data) => {
+      const message = data.toString();
+      errorOutput += message;
+      log.error(`[Create Admin Error] ${message.trim()}`);
+    });
+
+    adminProcess.on("close", (code) => {
+      if (code === 0) {
+        log.info("Usuário admin criado/verificado com sucesso!");
+        resolve(output);
+      } else {
+        log.error("Erro ao criar admin:", errorOutput);
+        reject(new Error(`Create admin failed with code ${code}: ${errorOutput}`));
+      }
+    });
+
+    adminProcess.on("error", (error) => {
+      log.error("Erro ao iniciar processo de criação de admin:", error);
+      reject(error);
+    });
+  });
+}
+
+async function initializeDatabase() {
+  const dbPath = ensureWritableDb();
+
+  try {
+    // Só executa migrations em produção OU se o banco não existir em dev
+    if (app.isPackaged || !fs.existsSync(dbPath)) {
+      log.info("Inicializando banco de dados...");
+
+      // 1. Executar migrations
+      await runMigrations(dbPath);
+
+      // 2. Criar usuário admin
+      await createAdmin();
+
+      log.info("Banco de dados inicializado com sucesso!");
+    } else {
+      log.info("Banco de dados já existe em desenvolvimento, pulando inicialização");
+    }
+  } catch (error) {
+    log.error("Erro ao inicializar banco de dados:", error);
+    // Você pode decidir se quer continuar ou abortar a aplicação
+    throw error;
+  }
+}
+
+async function startBackend() {
+  if (backendStarted) return;
+  backendStarted = true;
+
+  try {
+    // Inicializar banco antes de iniciar backend
+    await initializeDatabase();
+
+    const dbPath = ensureWritableDb();
+    log.info("dbPath do startBackend: " + dbPath)
+    const backendEntry = getBackendPath();
+    log.info("backendEntry do startBackend: " + backendEntry)
+
+    const env = Object.assign({}, process.env, {
+      DATABASE_URL: `file:${dbPath}`,
+      // 👇 IMPORTANTE: Força execução como Node
+      ELECTRON_RUN_AS_NODE: "1"
+    });
+
+    // 👇 USAR SPAWN AO INVÉS DE FORK
+    backendProcess = spawn(process.execPath, [backendEntry], {
+      env,
+      cwd: app.isPackaged ? path.join(process.resourcesPath, "backend") : path.join(__dirname, "..", "..", "backend"),
+      stdio: ["inherit", "pipe", "pipe"], // 👈 MUDOU AQUI
+      windowsHide: true // 👈 IMPORTANTE: Não mostra janela no Windows
+    });
+
+    log.info("Backend iniciado. PID:", backendProcess.pid);
+
+    // logs do backend
+    backendProcess.stdout.on("data", (data) => {
+      log.info(`[backend stdout] ${data.toString().trim()}`);
+    });
+
+    backendProcess.stderr.on("data", (data) => {
+      log.error(`[backend stderr] ${data.toString().trim()}`);
+    });
+
+    backendProcess.on("exit", (code, signal) => {
+      console.log("backend saiu:", code, signal);
+    });
+
+  } catch (error) {
+    log.error("Erro ao inicializar aplicação:", error);
+    app.quit();
+  }
+}
+
+function stopBackend() {
+  if (backendProcess) {
+    log.info("Encerrando backend... PID:" + backendProcess.pid);
+    kill(backendProcess.pid, "SIGTERM", (err) => {
+      if (err) log.error("Erro ao encerrar backend:", err);
+      else log.info("Backend encerrado com sucesso");
+    });
+    backendProcess = null;
+  }
+}
+
+
+
+function ensureWritableDb() {
+  log.info("Producao: " + app.isPackaged)
+
+  if (!app.isPackaged) {
+    return path.join(__dirname, "..", "..", "backend", "prisma", "dev.db");
+  }
+
+  const userData = app.getPath("userData");
+  const dbDest = path.join(userData, "prod.db");
+
+  log.info("dbDest: " + dbDest)
+
+  if (!fs.existsSync(path.dirname(dbDest))) {
+    fs.mkdirSync(path.dirname(dbDest), { recursive: true });
+  }
+
+  return dbDest;
+}
+
+function getBackendPath() {
+  if (!app.isPackaged) {
+    // dev: assume backend/dist/index.js na raiz do projeto (quando rodando em dev)
+    return path.join(__dirname, "..", "..", "backend", "dist", "index.js");
+  } else {
+    // prod: backend foi copiado para resources/backend/dist/index.js
+    return path.join(process.resourcesPath, "backend", "dist", "index.js");
+  }
+}
 
 function createWindow() {
   // Create the browser window.
@@ -62,7 +272,6 @@ function createWindow() {
   })
 
   mainWindow.on('ready-to-show', () => {
-    // startBackend();
 
     mainWindow.maximize()
     mainWindow.show()
@@ -86,6 +295,8 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  startBackend();
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.mlpmembers')
 
@@ -110,14 +321,14 @@ app.whenReady().then(() => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    // stopBackend();
+    stopBackend();
     app.quit()
   }
 
 })
 
 // app.on('quit', () => {
-  // stopBackend();
+// stopBackend();
 // });
 
 // In this file you can include the rest of your app's specific main process

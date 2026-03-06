@@ -9,10 +9,30 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
 asarUnpack:
+  - backend/**
+  - node_modules/.prisma/**
   - resources/**
+extraResources:
+  - from: backend/dist
+    to: backend/dist
+  - from: backend/package.json
+    to: backend/package.json
+  - from: backend/node_modules/.prisma
+    to: backend/node_modules/.prisma
+  - from: backend/node_modules
+    to: backend/node_modules
+  - from: backend/prisma/schema.prisma
+    to: backend/prisma/schema.prisma
+  - from: backend/prisma/migrations
+    to: backend/prisma/migrations
+  - from: backend/scripts
+    to: backend/scripts
 win:
   executableName: MLP Members
   icon: build/icon.ico
+  target:
+    - nsis
+    - zip
 nsis:
   oneClick: false
   artifactName: ${name}-${version}-setup.${ext}
