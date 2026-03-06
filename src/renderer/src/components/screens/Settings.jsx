@@ -14,9 +14,11 @@ export const Settings = () => {
         <div className="flex flex-col w-full h-full">
           <SettingsHeader />
           {/* Passa o estado e o setter */}
-          <SettingsSidebar selected={selectedTab} onSelect={setSelectedTab} />
+          <div className="flex h-full">
+            <SettingsSidebar selected={selectedTab} onSelect={setSelectedTab} />
+            <SettingsBody selected={selectedTab} />
+          </div>
         </div>
-        <SettingsBody selected={selectedTab} />
       </div>
     </div>
   );
