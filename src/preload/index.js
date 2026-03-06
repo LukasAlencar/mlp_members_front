@@ -1,3 +1,5 @@
+// src/preload/index.js
+
 import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
