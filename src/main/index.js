@@ -41,7 +41,7 @@ async function runMigrations(dbPath) {
 
     log.info('Prisma bin path:', prismaBin)
 
-    const migrateProcess = spawn(prismaBin, ['migrate', 'deploy', '--schema', schemaPath], {
+    const migrateProcess = spawn(`"${prismaBin}"`, ['migrate', 'deploy', '--schema', `"${schemaPath}"`], {
       env,
       cwd: backendDir,
       stdio: ['inherit', 'pipe', 'pipe'],
