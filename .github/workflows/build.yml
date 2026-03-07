@@ -33,19 +33,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- HML: publica como pre-release ---
-      - name: Build & Publish (hml)
+     # HML
+      - name: Build & Publish pre-release (hml)
         if: github.ref == 'refs/heads/hml'
-        run: npm run build -- --publish always
+        run: npm run build:publish -- -c.publish.releaseType=prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VITE_ENV: hml
-          # Marca como pre-release automaticamente via electron-builder
-
-      # --- MAIN: publica release oficial ---
-      - name: Build & Publish (main)
+# MAIN
+      - name: Build & Publish release (main)
         if: github.ref == 'refs/heads/main'
-        run: npm run build -- --publish always
+        run: npm run build:publish -- -c.publish.releaseType=release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VITE_ENV: production
