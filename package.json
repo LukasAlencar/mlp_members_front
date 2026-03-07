@@ -15,7 +15,8 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:backend": "cd backend && npm run build",
     "build:win": "npm run build:backend && electron-vite build && electron-builder --win",
-    "build:linux": "npm run build:backend && electron-vite build && electron-builder --linux"
+    "build:linux": "npm run build:backend && electron-vite build && electron-builder --linux",
+    "build:publish": "electron-vite build && electron-builder --publish always"
   },
   "asarUnpack": [
     "backend/**",
