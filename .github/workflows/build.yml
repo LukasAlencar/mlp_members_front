@@ -28,16 +28,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Install backend dependencies
-        working-directory: backend
+      - name: Install dependencies
         run: npm install
 
       - name: Install backend dependencies
-        run: cd backend && npm install
+        run: npm install
+        working-directory: backend
 
       - name: Build backend
-        working-directory: backend
         run: npm run build
+        working-directory: backend
 
       # --- DEV: só builda ---
       - name: Build (dev)
