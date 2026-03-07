@@ -9,16 +9,24 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # Electron Windows precisa buildar no Windows
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
         run: npm install
@@ -26,21 +34,38 @@ jobs:
       - name: Install backend dependencies
         run: cd backend && npm install
 
-      # --- DEV: só builda, não publica ---
+      - name: Build backend
+        run: cd backend && npm run build
+
+      # --- DEV: só builda ---
       - name: Build (dev)
         if: github.ref == 'refs/heads/dev'
         run: npm run build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # HML
+      # --- HML: bump patch + pre-release ---
+      - name: Bump patch version (hml)
+        if: github.ref == 'refs/heads/hml'
+        run: |
+          npm version patch --no-git-tag-version
+          git add package.json
+          git commit -m "chore: bump patch version [skip ci]"
+          git push
+
       - name: Build & Publish pre-release (hml)
         if: github.ref == 'refs/heads/hml'
         run: npm run build:hml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # MAIN
+      # --- MAIN: bump minor + release oficial ---
+      - name: Bump minor version (main)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          npm version minor --no-git-tag-version
+          git add package.json
+          git commit -m "chore: bump minor version [skip ci]"
+          git push
+
       - name: Build & Publish release (main)
         if: github.ref == 'refs/heads/main'
         run: npm run build:prod
