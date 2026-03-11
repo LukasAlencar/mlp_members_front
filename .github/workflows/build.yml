@@ -64,6 +64,7 @@ jobs:
         run: npm run build:hml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
 
       # --- MAIN: bump minor + release oficial ---
       - name: Bump minor version (main)
@@ -79,3 +80,4 @@ jobs:
         run: npm run build:prod
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
