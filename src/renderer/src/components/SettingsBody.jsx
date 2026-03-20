@@ -6,6 +6,10 @@ export const SettingsBody = ({ selected }) => {
     <div className="flex-1 p-6">
       {selected === "Conta" && <SettingsAccount />}
       {selected === "Sistema" && <SettingsSystem />}
+
+      <h1 className="text-5xl">
+        Em desenvolvimento
+      </h1>
     </div>
   );
 };

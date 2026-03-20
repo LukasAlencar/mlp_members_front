@@ -1,4 +1,6 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+//src/main/index.js
+
+import { app, shell, BrowserWindow } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -6,8 +8,7 @@ import { spawn } from 'child_process';
 import log from 'electron-log'
 import fs from "fs";
 import kill from "tree-kill";
-import { fork } from "child_process";
-
+import { autoUpdater } from 'electron-updater'
 
 let backendProcess;
 let backendStarted = false;
@@ -20,66 +21,47 @@ log.transports.file.resolvePathFn = () =>
 async function runMigrations(dbPath) {
   return new Promise((resolve, reject) => {
     const backendDir = app.isPackaged
-      ? path.join(process.resourcesPath, "backend")
-      : path.join(__dirname, "..", "..", "backend");
+      ? path.join(process.resourcesPath, 'backend')
+      : path.join(__dirname, '..', '..', 'backend')
 
-    const schemaPath = path.join(backendDir, "prisma", "schema.prisma");
+    const schemaPath = path.join(backendDir, 'prisma', 'schema.prisma')
 
-    log.info("Executando migrations...");
-    log.info("Schema path:", schemaPath);
-    log.info("Database path:", dbPath);
-
-    // Configurar environment para a migration
     const env = Object.assign({}, process.env, {
       DATABASE_URL: `file:${dbPath}`,
-      // 👇 IMPORTANTE: Evita criar novos processos Electron
-      ELECTRON_RUN_AS_NODE: "1"
-    });
+      ELECTRON_RUN_AS_NODE: '1'
+    })
 
-    // 👇 USAR SPAWN AO INVÉS DE TENTAR EXECUTAR PRISMA DIRETAMENTE
-    const prismaPath = app.isPackaged
-      ? path.join(backendDir, "node_modules", ".bin", "prisma.cmd") // Windows precisa do .cmd
-      : path.join(backendDir, "node_modules", ".bin", "prisma");
+    // Caminho do binário do prisma dentro do node_modules empacotado
+    const isWin = process.platform === 'win32'
+    const prismaBin = app.isPackaged
+      ? path.join(backendDir, 'node_modules', '.bin', isWin ? 'prisma.cmd' : 'prisma')
+      : path.join(backendDir, 'node_modules', '.bin', isWin ? 'prisma.cmd' : 'prisma')
 
-    const args = ["migrate", "deploy", "--schema", schemaPath];
+    log.info('Prisma bin path:', prismaBin)
 
-    const migrateProcess = spawn(prismaPath, args, {
+    const migrateProcess = spawn(`"${prismaBin}"`, ['migrate', 'deploy', '--schema', `"${schemaPath}"`], {
       env,
       cwd: backendDir,
-      stdio: ["inherit", "pipe", "pipe"], // 👈 MUDOU AQUI
-      windowsHide: true // 👈 IMPORTANTE: Não mostra janela no Windows
-    });
+      stdio: ['inherit', 'pipe', 'pipe'],
+      windowsHide: true,
+      shell: isWin // No Windows, precisa de shell para .cmd funcionar
+    })
 
-    let output = "";
-    let errorOutput = "";
+    let errorOutput = ''
 
-    migrateProcess.stdout.on("data", (data) => {
-      const message = data.toString();
-      output += message;
-      log.info(`[Prisma Migrate] ${message.trim()}`);
-    });
+    migrateProcess.stdout.on('data', (data) => log.info(`[Prisma] ${data.toString().trim()}`))
+    migrateProcess.stderr.on('data', (data) => {
+      errorOutput += data.toString()
+      log.error(`[Prisma Error] ${data.toString().trim()}`)
+    })
 
-    migrateProcess.stderr.on("data", (data) => {
-      const message = data.toString();
-      errorOutput += message;
-      log.error(`[Prisma Migrate Error] ${message.trim()}`);
-    });
+    migrateProcess.on('close', (code) => {
+      if (code === 0) resolve()
+      else reject(new Error(`Migration failed (code ${code}): ${errorOutput}`))
+    })
 
-    migrateProcess.on("close", (code) => {
-      if (code === 0) {
-        log.info("Migrations executadas com sucesso!");
-        resolve(output);
-      } else {
-        log.error("Erro ao executar migrations:", errorOutput);
-        reject(new Error(`Migration failed with code ${code}: ${errorOutput}`));
-      }
-    });
-
-    migrateProcess.on("error", (error) => {
-      log.error("Erro ao iniciar processo de migration:", error);
-      reject(error);
-    });
-  });
+    migrateProcess.on('error', reject)
+  })
 }
 
 async function createAdmin() {
@@ -295,6 +277,18 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+
+  if (app.isPackaged) {
+    try {
+      autoUpdater.requestHeaders = {
+        Authorization: `token ${import.meta.env.VITE_GH_TOKEN}`
+      }
+      autoUpdater.checkForUpdatesAndNotify()
+    } catch (error) {
+      log.error('Erro ao verificar updates:', error)
+    }
+  }
+
   startBackend();
 
   // Set app user model id for windows
@@ -316,6 +310,10 @@ app.whenReady().then(() => {
   })
 })
 
+autoUpdater.on('error', (error) => {
+  log.error('AutoUpdater error:', error)
+})
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -327,6 +325,11 @@ app.on('window-all-closed', () => {
 
 })
 
+
+autoUpdater.on('update-downloaded', () => {
+  // instala na próxima vez que fechar, ou force agora:
+  autoUpdater.quitAndInstall()
+})
 // app.on('quit', () => {
 // stopBackend();
 // });

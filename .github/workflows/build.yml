@@ -1,0 +1,83 @@
+name: Build & Release
+
+on:
+  push:
+    branches:
+      - main
+      - hml
+      - dev
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: backend
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        working-directory: backend
+        env:
+          DATABASE_URL: "file:./prisma/dev.db"
+
+      - name: Build backend
+        run: npm run build
+        working-directory: backend
+
+      # --- DEV: só builda ---
+      - name: Build (dev)
+        if: github.ref == 'refs/heads/dev'
+        run: npm run build
+
+      # --- HML: bump patch + pre-release ---
+      - name: Bump patch version (hml)
+        if: github.ref == 'refs/heads/hml'
+        run: |
+          npm version patch --no-git-tag-version
+          git add package.json
+          git commit -m "chore: bump patch version [skip ci]"
+          git push
+
+      - name: Build & Publish pre-release (hml)
+        if: github.ref == 'refs/heads/hml'
+        run: npm run build:hml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+
+      # --- MAIN: bump minor + release oficial ---
+      - name: Bump minor version (main)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          npm version minor --no-git-tag-version
+          git add package.json
+          git commit -m "chore: bump minor version [skip ci]"
+          git push
+
+      - name: Build & Publish release (main)
+        if: github.ref == 'refs/heads/main'
+        run: npm run build:prod
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}

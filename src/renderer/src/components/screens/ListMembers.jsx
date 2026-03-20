@@ -128,6 +128,7 @@ export const ListMembers = () => {
                       <th className="px-4 py-2 border border-zinc-700">Membro Desde</th>
                       <th className="px-4 py-2 border border-zinc-700">Termos de Imagem</th>
                       <th className="px-4 py-2 border border-zinc-700">Carteira de Membro</th>
+                      <th className="px-4 py-2 border border-zinc-700">Cartas</th>
                       <th className="px-4 py-2 border border-zinc-700">Ações</th>
                     </tr>
                   </thead>
