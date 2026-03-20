@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import FieldCard from "./FieldCard";
 import headerImg from "../assets/cabecalhocarteirinha.png";
 import { base_url } from "../services/config";
-import { formatDatePTBR, formatRole } from './../utils/utils';
+import { formatCivilStatus, formatDatePTBR, formatRole } from './../utils/utils';
 
 const MembershipCardExport = forwardRef(({ member }, ref) => {
   return (
@@ -34,8 +34,9 @@ const MembershipCardExport = forwardRef(({ member }, ref) => {
         </h1>
         <div className="w-full h-full flex flex-col">
           <div className="w-full flex gap-2 mb-3">
-            <FieldCard className="w-[70%] h-[40px]" label="Nome:" value={member.name} isExport />
-            <FieldCard className="w-[30%] h-[40px]" label="Telefone:" value={member.phone} isExport />
+            <FieldCard className="w-[60%] h-[40px]" label="Nome:" value={member.name} isExport/>
+            <FieldCard className="w-[20%] h-[40px]" label="Estado Civil:" value={formatCivilStatus(member.civilStatus)} isExport />
+            <FieldCard className="w-[20%] h-[40px]" label="Telefone:" value={member.phone} isExport />
           </div>
           <div className="w-full flex gap-2 justify-around mt-5">
             <FieldCard className="w-[23%] h-[40px]" label="RG:" value={member.rg} isExport />

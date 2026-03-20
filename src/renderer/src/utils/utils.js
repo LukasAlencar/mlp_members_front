@@ -31,3 +31,21 @@ export const formatRole = (role) => {
   }
 
 }
+
+export const formatCivilStatus = (civilStatus) => {
+  var civilStatus_lower = civilStatus.toLowerCase();
+
+  switch (civilStatus_lower) {
+    case "single":
+      return "Solteiro(a)";
+    case "married":
+      return "Casado(a)";
+    case "divorced":
+      return "Divorciado(a)";
+    case "widowed":
+      return "Viúvo(a)";
+    default:
+      return "Membro";
+  }
+
+}

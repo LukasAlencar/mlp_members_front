@@ -16,13 +16,14 @@ datasource db {
 model Member {
   id        String   @id @default(cuid())
   email     String?   @unique
-  
+
   name      String
   birthDate DateTime
   rg        String @unique
   cpf       String @unique
-  phone     String 
+  phone     String
   role      Role @default(MEMBER)
+  civilStatus CivilStatus @default(SINGLE)
   baptismDate DateTime?
   memberSince DateTime?
   imagePath String?
@@ -59,4 +60,11 @@ enum Role {
   PASTOR
   DEACON
   AUXILIARY
+}
+
+enum CivilStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
 }

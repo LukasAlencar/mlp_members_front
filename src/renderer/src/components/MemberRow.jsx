@@ -9,11 +9,11 @@ import { MdOutlineCancel } from "react-icons/md";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { PiHandshakeLight } from "react-icons/pi";
 import { RiExchangeLine } from "react-icons/ri";
-import { validateBirthDate, validateCpf, validateEmail, validateImage, validateName, validatePhone, validateRG, validateRole } from "../hooks/validateFields";
+import { validateBirthDate, validateCpf, validateEmail, validateImage, validateName, validatePhone, validateRG, validateRole, validateCivilStatus } from "../hooks/validateFields";
 import { TbPhotoSquareRounded } from "react-icons/tb";
 import { TbPhotoEdit } from "react-icons/tb";
 import cuid from "cuid";
-import { formatDate, formatDatePTBR, formatRole } from './../utils/utils';
+import { formatCivilStatus, formatDate, formatDatePTBR, formatRole } from './../utils/utils';
 import MembershipCard from "./MembershipCard";
 import LetterModal from './LetterModal'
 import { gerarDocxApresentacao, gerarDocxMudanca } from "../utils/generateLetter";
@@ -55,6 +55,9 @@ export const MemberRow = ({ member, index, onRemove }) => {
         break;
       case 'role':
         error = validateRole(newValue);
+        break;
+      case 'civilStatus':
+        error = validateCivilStatus(newValue);
         break;
       case 'image':
         error = await validateImage(newValue);
@@ -109,6 +112,7 @@ export const MemberRow = ({ member, index, onRemove }) => {
       cpf: validateCpf(memberEdited.cpf),
       birthDate: validateBirthDate(memberEdited.birthDate),
       role: validateRole(memberEdited.role.toLowerCase()),
+      civilStatus: validateCivilStatus(memberEdited.civilStatus.toLowerCase()),
       phone: validatePhone(memberEdited.phone),
       rg: validateRG(memberEdited.rg),
       image: memberEdited.imagePath && !memberEdited.image ? '' : await validateImage(memberEdited.image),
@@ -173,6 +177,7 @@ export const MemberRow = ({ member, index, onRemove }) => {
 
     formData.append("rg", memberEdited.rg);
     formData.append("role", memberEdited.role.toUpperCase());
+    formData.append("civilStatus", memberEdited.civilStatus.toUpperCase());
     formData.append("phone", memberEdited.phone);
 
     formData.append("acceptTerms", memberEdited.acceptTerms == "true" ? true : false);
@@ -222,6 +227,7 @@ export const MemberRow = ({ member, index, onRemove }) => {
         {modal}
         <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{memberEdited.name}</td>
         <td className="px-4 text-center py-2 border border-zinc-700">{formatRole(memberEdited.role)}</td>
+        <td className="px-4 text-center py-2 border border-zinc-700">{formatCivilStatus(memberEdited.civilStatus)}</td>
         <td className="px-4 text-center py-2 border border-zinc-700">{memberEdited.email}</td>
         <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{memberEdited.cpf}</td>
         <td className="px-4 text-center min-w-[150px] py-2 border border-zinc-700">{memberEdited.rg}</td>
@@ -262,13 +268,6 @@ export const MemberRow = ({ member, index, onRemove }) => {
   } else {
     return (
       <tr className={index % 2 === 0 ? "bg-zinc-900" : "bg-zinc-800"}>
-        {letterModal && (
-          <LetterModal
-            member={memberEdited}
-            type={letterModal}
-            onClose={() => setLetterModal(null)}
-          />
-        )}
         {modal}
         <td className="px-4 text-center min-w-[300px] py-2 border border-zinc-700">
           <input
@@ -293,6 +292,20 @@ export const MemberRow = ({ member, index, onRemove }) => {
             <option value="member">Membro</option>
             <option value="elder">Presbítero</option>
             <option value="auxiliary">Auxiliar</option>
+          </select>
+        </td>
+        <td className="px-4 text-center py-2 border min-w-[140px] border-zinc-700">
+          <select
+            name="civilStatus"
+            value={memberEdited.civilStatus.toLowerCase()}
+            onChange={handleChange}
+            className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.civilStatus ? 'red' : 'zinc'}-700`}
+            ref={(el) => { inputRefs.current['civilStatus'] = el }}
+          >
+            <option value="single">Solteiro(a)</option>
+            <option value="married">Casado(a)</option>
+            <option value="divorced">Divorciado(a)</option>
+            <option value="widowed">Viúvo(a)</option>
           </select>
         </td>
         <td className="px-4 text-center min-w-[270px] py-2 border border-zinc-700">
@@ -406,13 +419,13 @@ export const MemberRow = ({ member, index, onRemove }) => {
               title="Carta de Mudança"
               className="cursor-pointer hover:text-blue-600"
               size={20}
-              onClick={() => setLetterModal('mudanca')}
+              onClick={() => downloadDocx('mudanca')}
             />
             <PiHandshakeLight
               title="Carta de Apresentação"
               className="cursor-pointer hover:text-blue-600"
               size={20}
-              onClick={() => setLetterModal('apresentacao')}
+              onClick={() => downloadDocx('apresentacao')}
             />
           </div>
         </td>

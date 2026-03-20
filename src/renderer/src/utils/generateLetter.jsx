@@ -1,35 +1,63 @@
 import {
-  Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle
+  Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle,
+  ImageRun
 } from 'docx'
 import { saveAs } from 'file-saver'
 import { formatDatePTBR, formatRole } from './utils'
+import logoSrc from '../assets/mlp_logo.png'
 
 const IGREJA = 'Ministério Luz da Palavra'
 const ENDERECO = 'Rua Sapucaí Mirim, 172 - Jd. Santo Eduardo'
 
-const headerParagraphs = (titulo) => [
-  new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 80 },
-    children: [new TextRun({ text: IGREJA, bold: true, size: 28, font: 'Times New Roman' })]
-  }),
-  new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 80 },
-    children: [new TextRun({ text: ENDERECO, size: 22, font: 'Times New Roman' })]
-  }),
-  new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 320 },
-    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '000000', space: 1 } },
-    children: []
-  }),
-  new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 480 },
-    children: [new TextRun({ text: titulo, bold: true, size: 28, allCaps: true, font: 'Times New Roman' })]
-  }),
-]
+// Converte a imagem importada para ArrayBuffer (necessário para o docx)
+const loadImageAsArrayBuffer = async (src) => {
+  const response = await fetch(src)
+  const blob = await response.blob()
+  return await blob.arrayBuffer()
+}
+
+const headerParagraphs = async (titulo) => {
+
+  const logoBuffer = await loadImageAsArrayBuffer(logoSrc)
+
+  return [
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 120 },
+      children: [
+        new ImageRun({
+          data: logoBuffer,
+          transformation: {
+            width: 80,   // largura em pixels no documento
+            height: 80,  // altura em pixels no documento
+          },
+          type: 'png'
+        })
+      ]
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 80 },
+      children: [new TextRun({ text: IGREJA, bold: true, size: 28, font: 'Times New Roman' })]
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 80 },
+      children: [new TextRun({ text: ENDERECO, size: 22, font: 'Times New Roman' })]
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 320 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '000000', space: 1 } },
+      children: []
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 480 },
+      children: [new TextRun({ text: titulo, bold: true, size: 28, allCaps: true, font: 'Times New Roman' })]
+    }),
+  ]
+}
 
 const assinaturaParagraphs = () => [
   new Paragraph({ spacing: { before: 960 }, children: [new TextRun({ text: '', font: 'Times New Roman' })] }),
@@ -64,6 +92,8 @@ const textoBoldInline = (partes) => new Paragraph({
 })
 
 export const gerarDocxApresentacao = async (member) => {
+  const header = await headerParagraphs('Carta de Apresentação')
+
   const doc = new Document({
     sections: [{
       properties: {
@@ -73,7 +103,7 @@ export const gerarDocxApresentacao = async (member) => {
         }
       },
       children: [
-        ...headerParagraphs('Carta de Apresentação'),
+        ...header,
 
         textoParagraph('Aos pastores, presbíteros e irmãos em Cristo Jesus,'),
 
@@ -109,6 +139,7 @@ export const gerarDocxApresentacao = async (member) => {
 }
 
 export const gerarDocxMudanca = async (member) => {
+  const header = await headerParagraphs('Carta de Mudança')
   const doc = new Document({
     sections: [{
       properties: {
@@ -118,7 +149,7 @@ export const gerarDocxMudanca = async (member) => {
         }
       },
       children: [
-        ...headerParagraphs('Carta de Mudança'),
+        ...header,
 
         textoParagraph('Aos pastores, presbíteros e irmãos em Cristo Jesus,'),
 
