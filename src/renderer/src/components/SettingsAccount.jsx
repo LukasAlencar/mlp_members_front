@@ -1,7 +1,7 @@
 export const SettingsAccount = () => {
   return (
     <div>
-      Account
+      Account Settings
     </div>
   )
 }
