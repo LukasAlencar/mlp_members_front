@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
 import { createMember, deleteMember, getAllMembers, getCountMembers, getMemberById, updateMember } from "../repositories/member.repository";
-import { Role } from "@prisma/client";
+import { CivilStatus, Role } from "@prisma/client";
 import upload from "../multerConfig";
 import path from "path";
 import fs from 'fs';
-import { format } from "date-fns";
 import ExcelJS from "exceljs";
 import { incrementMemberAdded, incrementMemberRemoved } from "../repositories/statistics.repository";
-import { toZonedTime } from "date-fns-tz";
 
 export const create = async (req: Request, res: Response) => {
     try {
@@ -16,20 +14,20 @@ export const create = async (req: Request, res: Response) => {
                 return res.status(400).json({ error: "Erro ao processar o upload." });
             }
 
-            const { id, name, email, birthDate, cpf, rg, baptismDate, memberSince, role, phone } = req.body;
+            const { id, name, email, birthDate, cpf, rg, baptismDate, memberSince, role, civilStatus, phone } = req.body;
 
             var {acceptTerms} = req.body;
 
             const imagePath = req.file ? `userImages/${req.file.filename}` : null;
-            
+
             acceptTerms = acceptTerms == 'true' ? true : false;
 
-            const {member, success, message} = await createMember({ id, name, email, birthDate, cpf, imagePath, rg, baptismDate, memberSince, role, phone, acceptTerms });
+            const {member, success, message} = await createMember({ id, name, email, birthDate, cpf, imagePath, rg, baptismDate, memberSince, role, civilStatus, phone, acceptTerms });
 
             if(!success) {
                 return res.status(500).json({ error: "Erro ao criar membro", message });
             }
-            
+
             if(member) {
                 // Incrementa a estatística de membro adicionado
                 const response = await incrementMemberAdded(member.id);
@@ -155,18 +153,18 @@ export const delete_member = async (req: Request, res: Response) => {
 // Função para formatar datas
 const formatDate = (date: Date | null) => {
     if(date){
-        
+
         const _date = (date).toISOString().split('T')[0];
 
         const day = _date.split('-')[2];
-        const month = _date.split('-')[1];  
+        const month = _date.split('-')[1];
         const year = _date.split('-')[0];
 
         return `${day}/${month}/${year}`;
     }else {
         return '';
     }
-} 
+}
 
 export const export_members_csv = async (req: Request, res: Response) => {
     try {
@@ -181,7 +179,7 @@ export const export_members_csv = async (req: Request, res: Response) => {
         const writeStream = fs.createWriteStream(filePath);
 
         // Cabeçalho do CSV
-        writeStream.write("Nome,Cargo,Email,CPF,RG,Telefone,Data de Batismo,Data de Nascimento,Membro desde,Aceitou termos de Imagem?\n");
+        writeStream.write("Nome,Cargo,Estado Cívil,Email,CPF,RG,Telefone,Data de Batismo,Data de Nascimento,Membro desde,Aceitou termos de Imagem?\n");
 
 
         // Escrever os dados dos membros no CSV
@@ -210,7 +208,24 @@ export const export_members_csv = async (req: Request, res: Response) => {
                     break;
             }
 
-            const row = `${member.name},${role},${member.email},${member.cpf},${member.rg},${member.phone},${formatDate(member.baptismDate)},${formatDate(member.birthDate)},${formatDate(member.memberSince)},${member.acceptTerms ? 'Sim' : 'Não'}\n`;
+            var civilStatus = 'Solteiro';
+
+            switch (member.civilStatus) {
+                case CivilStatus.SINGLE:
+                    civilStatus = 'Solteiro';
+                    break;
+                case CivilStatus.MARRIED:
+                    civilStatus = 'Casado';
+                    break;
+                case CivilStatus.DIVORCED:
+                    civilStatus = 'Divorciado';
+                    break;
+                case CivilStatus.WIDOWED:
+                    civilStatus = 'Viúvo';
+                    break;
+            }
+
+            const row = `${member.name},${role},${civilStatus},${member.email},${member.cpf},${member.rg},${member.phone},${formatDate(member.baptismDate)},${formatDate(member.birthDate)},${formatDate(member.memberSince)},${member.acceptTerms ? 'Sim' : 'Não'}\n`;
             writeStream.write(row);
         });
 
@@ -241,6 +256,7 @@ export const exportToExcel = async (req: Request, res: Response) => {
             { header: "ID", key: "id", width: 10 },
             { header: "Nome", key: "name", width: 30 },
             { header: "Cargo", key: "role", width: 20 },
+            { header: "Estado Cívil", key: "civilStatus", width: 20 },
             { header: "Email", key: "email", width: 30 },
             { header: "CPF", key: "cpf", width: 20 },
             { header: "RG", key: "rg", width: 20 },
@@ -277,10 +293,28 @@ export const exportToExcel = async (req: Request, res: Response) => {
                     break;
             }
 
+            var civilStatus = 'Solteiro';
+
+            switch (member.civilStatus) {
+                case CivilStatus.SINGLE:
+                    civilStatus = 'Solteiro';
+                    break;
+                case CivilStatus.MARRIED:
+                    civilStatus = 'Casado';
+                    break;
+                case CivilStatus.DIVORCED:
+                    civilStatus = 'Divorciado';
+                    break;
+                case CivilStatus.WIDOWED:
+                    civilStatus = 'Viúvo';
+                    break;
+            }
+
             worksheet.addRow({
                 id: member.id,
                 name: member.name,
                 role,
+                civilStatus,
                 email: member.email,
                 cpf: member.cpf,
                 rg: member.rg,
@@ -316,7 +350,7 @@ export const get_birthday_people_of_month = async (req: Request, res: Response) 
         const allMembers = await getAllMembers();
 
         const currentMonth = new Date().getMonth() + 1;
-        
+
         const birthdayPeople = allMembers.filter(member => {
             const memberMonth = new Date(member.birthDate).getUTCMonth() + 1;
 

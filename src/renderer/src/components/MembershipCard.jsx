@@ -1,6 +1,6 @@
 import { base_url } from "../services/config"
 import headerImg from "../assets/cabecalhocarteirinha.png"
-import { formatDatePTBR, formatRole } from './../utils/utils';
+import { formatCivilStatus, formatDatePTBR, formatRole } from './../utils/utils';
 import FieldCard from "./FieldCard";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -72,7 +72,7 @@ export const MembershipCard = ({ member }) => {
 
   return (
     <>
-      <div id="card" onClick={handleDownloadPng} key={member.id} className="w-[720px] h-[400px] bg-zinc-50 rounded-lg text-zinc-900 flex flex-col overflow-hidden">
+      <div id="card" onClick={handleDownloadPng} title="Baixar carteirinha" key={member.id} className="w-[720px] h-[400px] bg-zinc-50 rounded-lg text-zinc-900 flex flex-col overflow-hidden cursor-pointer">
         <header className="w-full h-1/2 flex items-center bg-zinc-900">
           <div className="w-[70%] h-full flex items-center justify-center">
             <img src={headerImg} alt="" />
@@ -91,8 +91,9 @@ export const MembershipCard = ({ member }) => {
           </h1>
           <div className="w-full h-full flex flex-col">
             <div className="w-full flex gap-2 mb-3">
-              <FieldCard className="w-[70%] h-[40px]" label="Nome:" value={member.name} />
-              <FieldCard className="w-[30%] h-[40px]" label="Telefone:" value={member.phone} />
+              <FieldCard className="w-[60%] h-[40px]" label="Nome:" value={member.name} />
+              <FieldCard className="w-[20%] h-[40px]" label="Estado Civil:" value={formatCivilStatus(member.civilStatus)} />
+              <FieldCard className="w-[20%] h-[40px]" label="Telefone:" value={member.phone} />
             </div>
             <div className="w-full flex gap-2 justify-around mt-5">
               <FieldCard className="w-[23%] h-[40px]" label="RG:" value={member.rg} />
