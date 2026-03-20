@@ -1,6 +1,6 @@
 export const SettingsSystem = () => {
   return (
-    <div>System</div>
+    <div>System settings</div>
   )
 }
 
