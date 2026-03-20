@@ -7,18 +7,22 @@ import { useRef, useState } from "react";
 import InputMask from 'react-input-mask';
 import { MdOutlineCancel } from "react-icons/md";
 import { FaRegCheckCircle } from "react-icons/fa";
+import { PiHandshakeLight } from "react-icons/pi";
+import { RiExchangeLine } from "react-icons/ri";
 import { validateBirthDate, validateCpf, validateEmail, validateImage, validateName, validatePhone, validateRG, validateRole } from "../hooks/validateFields";
 import { TbPhotoSquareRounded } from "react-icons/tb";
 import { TbPhotoEdit } from "react-icons/tb";
 import cuid from "cuid";
 import { formatDate, formatDatePTBR, formatRole } from './../utils/utils';
 import MembershipCard from "./MembershipCard";
+import LetterModal from './LetterModal'
+import { gerarDocxApresentacao, gerarDocxMudanca } from "../utils/generateLetter";
 
 
 
 export const MemberRow = ({ member, index, onRemove }) => {
 
-
+  const [letterModal, setLetterModal] = useState(null)
   const fileInputRef = useRef(null);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -153,7 +157,7 @@ export const MemberRow = ({ member, index, onRemove }) => {
 
     var birthdate = memberEdited.birthDate
 
-    if(!memberEdited.birthDate.includes('T00:00:00')) {
+    if (!memberEdited.birthDate.includes('T00:00:00')) {
       birthdate += 'T00:00:00Z';
     }
 
@@ -204,6 +208,14 @@ export const MemberRow = ({ member, index, onRemove }) => {
     }
   };
 
+  const downloadDocx = async (type) => {
+    if (type === 'apresentacao') {
+      await gerarDocxApresentacao(memberEdited)
+    } else {
+      await gerarDocxMudanca(memberEdited)
+    }
+  }
+
   if (!isEditing) {
     return (
       <tr className={index % 2 === 0 ? "bg-zinc-900" : "bg-zinc-800"}>
@@ -225,6 +237,22 @@ export const MemberRow = ({ member, index, onRemove }) => {
         </td>
         <td className="px-4 text-center py-2 border border-zinc-700">
           <div className="w-full h-full flex justify-center items-center gap-2">
+            <RiExchangeLine
+              title="Carta de Mudança"
+              className="cursor-pointer hover:text-blue-600"
+              size={20}
+              onClick={() => downloadDocx('mudanca')}
+            />
+            <PiHandshakeLight
+              title="Carta de Apresentação"
+              className="cursor-pointer hover:text-blue-600"
+              size={20}
+              onClick={() => downloadDocx('apresentacao')}
+            />
+          </div>
+        </td>
+        <td className="px-4 text-center py-2 border border-zinc-700">
+          <div className="w-full h-full flex justify-center items-center gap-2">
             <GoTrash onClick={handleRemove} className="cursor-pointer hover:text-red-600" size={20} />
             <HiOutlinePencilAlt onClick={() => setIsEditing(true)} className="cursor-pointer hover:hover:text-blue-600" size={20} />
           </div>
@@ -234,6 +262,13 @@ export const MemberRow = ({ member, index, onRemove }) => {
   } else {
     return (
       <tr className={index % 2 === 0 ? "bg-zinc-900" : "bg-zinc-800"}>
+        {letterModal && (
+          <LetterModal
+            member={memberEdited}
+            type={letterModal}
+            onClose={() => setLetterModal(null)}
+          />
+        )}
         {modal}
         <td className="px-4 text-center min-w-[300px] py-2 border border-zinc-700">
           <input
@@ -364,6 +399,22 @@ export const MemberRow = ({ member, index, onRemove }) => {
             onChange={handleChange}
             ref={(el) => { inputRefs.current['image'] = el }}
           />
+        </td>
+        <td className="px-4 text-center py-2 border border-zinc-700">
+          <div className="w-full h-full flex justify-center items-center gap-2">
+            <RiExchangeLine
+              title="Carta de Mudança"
+              className="cursor-pointer hover:text-blue-600"
+              size={20}
+              onClick={() => setLetterModal('mudanca')}
+            />
+            <PiHandshakeLight
+              title="Carta de Apresentação"
+              className="cursor-pointer hover:text-blue-600"
+              size={20}
+              onClick={() => setLetterModal('apresentacao')}
+            />
+          </div>
         </td>
         <td className="px-4 text-center py-2 border border-zinc-700">
           <div className="w-full h-full flex justify-center items-center gap-2">
