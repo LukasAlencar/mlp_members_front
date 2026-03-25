@@ -1,6 +1,6 @@
 {
   "name": "mlp_members",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Aplicativo de controle de membros do ministério Luz da Palavra",
   "main": "./out/main/index.js",
   "author": "Alencar's Org",
