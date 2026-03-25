@@ -5,7 +5,7 @@ import ModalDefault from '../ModalDefault';
 import axios from 'axios';
 import { base_url } from '../../services/config';
 import useModal from '../Modal';
-import { validateBirthDate, validateCpf, validateEmail, validateImage, validateName, validatePhone, validateRG, validateRole } from '../../hooks/validateFields';
+import { validateBirthDate, validateCivilStatus, validateCpf, validateEmail, validateImage, validateName, validatePhone, validateRG, validateRole } from '../../hooks/validateFields';
 import cuid from 'cuid';
 import { useNavigate } from 'react-router';
 import { ImageTerm } from './ImageTerm';
@@ -20,6 +20,7 @@ const RegisterMember = () => {
     baptismDate: '',
     memberSince: '',
     role: '',
+    civilStatus: '',
     image: null,
     phone: '',
     acceptTerms: false,
@@ -61,6 +62,9 @@ const RegisterMember = () => {
       case 'role':
         error = validateRole(newValue);
         break;
+      case 'civilStatus':
+        error = validateCivilStatus(newValue);
+        break;
       case 'image':
         error = await validateImage(newValue);
         break;
@@ -89,6 +93,7 @@ const RegisterMember = () => {
       cpf: validateCpf(member.cpf),
       birthDate: validateBirthDate(member.birthDate),
       role: validateRole(member.role),
+      civilStatus: member.civilStatus ? validateCivilStatus(member.civilStatus) : '',
       phone: validatePhone(member.phone),
       rg: validateRG(member.rg),
       image: member.image ? await validateImage(member.image) : '', // Validação opcional
@@ -119,6 +124,7 @@ const RegisterMember = () => {
 
     formData.append("rg", member.rg);
     formData.append("role", member.role.toUpperCase());
+    formData.append("civilStatus", member.civilStatus.toUpperCase());
     formData.append("phone", member.phone);
     formData.append("acceptTerms", member.acceptTerms);
 
@@ -170,190 +176,210 @@ const RegisterMember = () => {
         <Sidebar />
         {!showTerm ? (
 
-        <div className="bg-zinc-950 min-h-screen flex items-center w-full justify-center p-5">
-          <div className="bg-zinc-900 p-8 rounded-lg shadow-lg flex flex-col">
-            <h2 className="text-2xl text-white mb-4">Cadastrar membro</h2>
-            <form>
+          <div className="bg-zinc-950 min-h-screen flex items-center w-full justify-center p-5">
+            <div className="bg-zinc-900 p-8 rounded-lg shadow-lg flex flex-col">
+              <h2 className="text-2xl text-white mb-4">Cadastrar membro</h2>
+              <form>
 
-              <div className="flex justify-center items-center mb-4 gap-2">
-                <div className="w-8/12">
-                  <label className="text-white block mb-2" htmlFor="name">Nome completo *</label>
-                  <input
-                    className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.name ? 'red' : 'zinc'}-700`}
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={member.name}
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'>
-                    {errors.name && <p className="text-red-400 text-xs">{errors.name}</p>}
+                <div className="flex justify-center items-center mb-4 gap-2">
+                  <div className="w-8/12">
+                    <label className="text-white block mb-2" htmlFor="name">Nome completo *</label>
+                    <input
+                      className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.name ? 'red' : 'zinc'}-700`}
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={member.name}
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'>
+                      {errors.name && <p className="text-red-400 text-xs">{errors.name}</p>}
+                    </div>
+                  </div>
+                  <div className='w-4/12'>
+                    <label className="text-white block mb-2" htmlFor="cpf">CPF *</label>
+                    <InputMask
+                      className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.cpf ? 'red' : 'zinc'}-700`}
+                      mask="999.999.999-99"
+                      type="text"
+                      id="cpf"
+                      name="cpf"
+                      value={member.cpf}
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'>
+                      {errors.cpf && <p className="text-red-400 text-xs mt-2">{errors.cpf}</p>}
+                    </div>
                   </div>
                 </div>
-                <div className='w-4/12'>
-                  <label className="text-white block mb-2" htmlFor="cpf">CPF *</label>
-                  <InputMask
-                    className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.cpf ? 'red' : 'zinc'}-700`}
-                    mask="999.999.999-99"
-                    type="text"
-                    id="cpf"
-                    name="cpf"
-                    value={member.cpf}
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'>
-                    {errors.cpf && <p className="text-red-400 text-xs mt-2">{errors.cpf}</p>}
-                  </div>
-                </div>
-              </div>
 
-              <div className="flex justify-center items-center mb-4 gap-2">
-                <div className="w-8/12">
-                  <label className="text-white block mb-2" htmlFor="email">Email</label>
-                  <input
-                    className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.email ? 'red' : 'zinc'}-700`}
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={member.email}
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'>
-                    {errors.email && <p className="text-red-400 text-xs mt-2">{errors.email}</p>}
+                <div className="flex justify-center items-center mb-4 gap-2">
+                  <div className="w-8/12">
+                    <label className="text-white block mb-2" htmlFor="email">Email</label>
+                    <input
+                      className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.email ? 'red' : 'zinc'}-700`}
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={member.email}
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'>
+                      {errors.email && <p className="text-red-400 text-xs mt-2">{errors.email}</p>}
+                    </div>
+                  </div>
+                  <div className='w-4/12'>
+                    <label className="text-white block mb-2" htmlFor="rg">RG *</label>
+                    <InputMask
+                      className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.rg ? 'red' : 'zinc'}-700`}
+                      mask="99.999.999-9"
+                      type="text"
+                      id="rg"
+                      name="rg"
+                      value={member.rg}
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'>
+                      {errors.rg && <p className="text-red-400 text-xs mt-2">{errors.rg}</p>}
+                    </div>
                   </div>
                 </div>
-                <div className='w-4/12'>
-                  <label className="text-white block mb-2" htmlFor="rg">RG *</label>
-                  <InputMask
-                    className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.rg ? 'red' : 'zinc'}-700`}
-                    mask="99.999.999-9"
-                    type="text"
-                    id="rg"
-                    name="rg"
-                    value={member.rg}
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'>
-                    {errors.rg && <p className="text-red-400 text-xs mt-2">{errors.rg}</p>}
-                  </div>
-                </div>
-              </div>
 
-              <div className="flex justify-center items-center mb-4 gap-2">
-                <div className="w-4/12">
-                  <label className="text-white block mb-2" htmlFor="birthDate">Data de nascimento *</label>
-                  <input
-                    className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.birthDate ? 'red' : 'zinc'}-700`}
-                    type="date"
-                    id="birthDate"
-                    name="birthDate"
-                    value={member.birthDate}
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'>
-                    {errors.birthDate && <p className="text-red-400 text-xs mt-2">{errors.birthDate}</p>}
+                <div className="flex justify-center items-center mb-4 gap-2">
+                  <div className="w-4/12">
+                    <label className="text-white block mb-2" htmlFor="birthDate">Data de nascimento *</label>
+                    <input
+                      className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.birthDate ? 'red' : 'zinc'}-700`}
+                      type="date"
+                      id="birthDate"
+                      name="birthDate"
+                      value={member.birthDate}
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'>
+                      {errors.birthDate && <p className="text-red-400 text-xs mt-2">{errors.birthDate}</p>}
+                    </div>
+                  </div>
+                  <div className="w-4/12">
+                    <label className="text-white block mb-2" htmlFor="baptismDate">Data de batismo</label>
+                    <input
+                      className="bg-zinc-700 text-white rounded w-full py-2 px-3"
+                      type="date"
+                      id="baptismDate"
+                      name="baptismDate"
+                      value={member.baptismDate}
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'></div>
+                  </div>
+                  <div className="w-4/12">
+                    <label className="text-white block mb-2" htmlFor="memberSince">Membro desde</label>
+                    <input
+                      className="bg-zinc-700 text-white rounded w-full py-2 px-3"
+                      type="date"
+                      id="memberSince"
+                      name="memberSince"
+                      value={member.memberSince}
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'></div>
                   </div>
                 </div>
-                <div className="w-4/12">
-                  <label className="text-white block mb-2" htmlFor="baptismDate">Data de batismo</label>
-                  <input
-                    className="bg-zinc-700 text-white rounded w-full py-2 px-3"
-                    type="date"
-                    id="baptismDate"
-                    name="baptismDate"
-                    value={member.baptismDate}
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'></div>
-                </div>
-                <div className="w-4/12">
-                  <label className="text-white block mb-2" htmlFor="memberSince">Membro desde</label>
-                  <input
-                    className="bg-zinc-700 text-white rounded w-full py-2 px-3"
-                    type="date"
-                    id="memberSince"
-                    name="memberSince"
-                    value={member.memberSince}
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'></div>
-                </div>
-              </div>
 
-              <div className="flex justify-center items-center mb-4 gap-2">
-                <div className="w-4/12">
-                  <label className="text-white block mb-2" htmlFor="role">Cargo *</label>
-                  <select
-                    className={`bg-zinc-700 text-white rounded w-full py-3 px-3 border border-${errors.role ? 'red' : 'zinc'}-700`}
-                    id="role"
-                    name="role"
-                    value={member.role}
-                    onChange={handleChange}
-                  >
+                <div className="flex justify-center items-center mb-4 gap-2">
+                  <div className="w-4/12">
+                    <label className="text-white block mb-2" htmlFor="role">Cargo *</label>
+                    <select
+                      className={`bg-zinc-700 text-white rounded w-full py-3 px-3 border border-${errors.role ? 'red' : 'zinc'}-700`}
+                      id="role"
+                      name="role"
+                      value={member.role}
+                      onChange={handleChange}
+                    >
 
-                    <option value="">Selecione...</option>
-                    <option value="member">Membro</option>
-                    <option value="pastor">Pastor</option>
-                    <option value="elder">Presbítero</option>
-                    <option value="deacon">Diácono</option>
-                    <option value="auxiliary">Auxiliar</option>
-                  </select>
-                  <div className='h-4 mt-2'>
-                    {errors.role && <p className="text-red-400 text-xs mt-2">{errors.role}</p>}
+                      <option value="">Selecione...</option>
+                      <option value="member">Membro</option>
+                      <option value="pastor">Pastor</option>
+                      <option value="elder">Presbítero</option>
+                      <option value="deacon">Diácono</option>
+                      <option value="auxiliary">Auxiliar</option>
+                    </select>
+                    <div className='h-4 mt-2'>
+                      {errors.role && <p className="text-red-400 text-xs mt-2">{errors.role}</p>}
+                    </div>
                   </div>
-                </div>
-                <div className="w-4/12">
-                  <label className="text-white block mb-2" htmlFor="image">Imagem *</label>
-                  <input
-                    className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.image ? 'red' : 'zinc'}-700`}
-                    type="file"
-                    id="image"
-                    name="image"
-                    accept='image/png, image/jpeg, image/jpg'
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'>
-                    {errors.image && <p className="text-red-400 text-xs mt-2">{errors.image}</p>}
-                  </div>
-                </div>
-                <div className='w-4/12'>
-                  <label className="text-white block mb-2" htmlFor="rg">Telefone *</label>
-                  <InputMask
-                    className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.phone ? 'red' : 'zinc'}-700`}
-                    mask="(99) 99999-9999"
-                    type="text"
-                    id="phone"
-                    name="phone"
-                    value={member.phone}
-                    onChange={handleChange}
-                  />
-                  <div className='h-4 mt-2'>
-                    {errors.phone && <p className="text-red-400 text-xs mt-2">{errors.phone}</p>}
-                  </div>
+                  <div className="w-4/12">
+                    <label className="text-white block mb-2" htmlFor="civilStatus">Estado Civil *</label>
+                    <select
+                      className={`bg-zinc-700 text-white rounded w-full py-3 px-3 border border-${errors.civilStatus ? 'red' : 'zinc'}-700`}
+                      id="civilStatus"
+                      name="civilStatus"
+                      value={member.civilStatus}
+                      onChange={handleChange}
+                    >
 
-                </div>
-              </div>
-              <div className='w-full flex items-center justify-between'>
-                <div onClick={handleSubmit} className="bg-zinc-500 cursor-pointer hover:bg-zinc-600 text-white py-2 px-4 w-fit rounded">
-                  Cadastrar
-                </div>
-                <div className='flex flex-col'>
-                  <div className='flex items-center gap-2'>
-                    <p>Aceita o <span onClick={()=>setShowTerm(true)} className='underline text-blue-500 cursor-pointer'>termo</span> de uso de imagem?</p>
-                    <input name="acceptTerms" onChange={handleChange} checked={member.acceptTerms || false} type="checkbox" />
+                      <option value="">Selecione...</option>
+                      <option value="single">Solteiro(a)</option>
+                      <option value="married">Casado(a)</option>
+                      <option value="divorced">Divorciado(a)</option>
+                      <option value="widowed">Viúvo(a)</option>
+                    </select>
+                    <div className='h-4 mt-2'>
+                      {errors.civilStatus && <p className="text-red-400 text-xs mt-2">{errors.civilStatus}</p>}
+                    </div>
                   </div>
-                  <p className='text-xs text-zinc-500'>Solicite ao membro que ele leia e marque o checkbox</p>
+                  <div className="w-4/12">
+                    <label className="text-white block mb-2" htmlFor="image">Imagem *</label>
+                    <input
+                      className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.image ? 'red' : 'zinc'}-700`}
+                      type="file"
+                      id="image"
+                      name="image"
+                      accept='image/png, image/jpeg, image/jpg'
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'>
+                      {errors.image && <p className="text-red-400 text-xs mt-2">{errors.image}</p>}
+                    </div>
+                  </div>
+                  <div className='w-4/12'>
+                    <label className="text-white block mb-2" htmlFor="rg">Telefone *</label>
+                    <InputMask
+                      className={`bg-zinc-700 text-white rounded w-full py-2 px-3 border border-${errors.phone ? 'red' : 'zinc'}-700`}
+                      mask="(99) 99999-9999"
+                      type="text"
+                      id="phone"
+                      name="phone"
+                      value={member.phone}
+                      onChange={handleChange}
+                    />
+                    <div className='h-4 mt-2'>
+                      {errors.phone && <p className="text-red-400 text-xs mt-2">{errors.phone}</p>}
+                    </div>
+
+                  </div>
                 </div>
-              </div>
-            </form>
+                <div className='w-full flex items-center justify-between'>
+                  <div onClick={handleSubmit} className="bg-zinc-500 cursor-pointer hover:bg-zinc-600 text-white py-2 px-4 w-fit rounded">
+                    Cadastrar
+                  </div>
+                  <div className='flex flex-col'>
+                    <div className='flex items-center gap-2'>
+                      <p>Aceita o <span onClick={() => setShowTerm(true)} className='underline text-blue-500 cursor-pointer'>termo</span> de uso de imagem?</p>
+                      <input name="acceptTerms" onChange={handleChange} checked={member.acceptTerms || false} type="checkbox" />
+                    </div>
+                    <p className='text-xs text-zinc-500'>Solicite ao membro que ele leia e marque o checkbox</p>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
         )
-        :
-        (
-          <ImageTerm name={member.name} cpf={member.cpf} handleCloseTerm={()=>handleCloseTerm()}></ImageTerm>
-        )
-      }
+          :
+          (
+            <ImageTerm name={member.name} cpf={member.cpf} handleCloseTerm={() => handleCloseTerm()}></ImageTerm>
+          )
+        }
       </div>
     </>
 

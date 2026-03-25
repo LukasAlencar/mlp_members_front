@@ -35,6 +35,11 @@ const validateRole = (role) => {
   return validRoles.includes(role) ? '' : 'Cargo inválido';
 };
 
+const validateCivilStatus = (civilStatus) => {
+  const validStatuses = ['single', 'married', 'divorced', 'widowed'];
+  return validStatuses.includes(civilStatus) ? '' : 'Estado civil inválido';
+};
+
 const validateImage = (image) => {
   if (!image) return 'A imagem é obrigatória';
 
@@ -60,4 +65,4 @@ const validateImage = (image) => {
   });
 };
 
-export { validateEmail, validateName, validateCpf, validateRG, validatePhone, validateBirthDate, validateRole, validateImage };
+export { validateEmail, validateName, validateCpf, validateRG, validatePhone, validateBirthDate, validateRole, validateCivilStatus, validateImage };

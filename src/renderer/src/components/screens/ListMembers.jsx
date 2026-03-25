@@ -119,6 +119,7 @@ export const ListMembers = () => {
                     <tr>
                       <th className="px-4 py-2 border border-zinc-700">Nome</th>
                       <th className="px-4 py-2 border border-zinc-700">Cargo</th>
+                      <th className="px-4 py-2 border border-zinc-700">Estado Civil</th>
                       <th className="px-4 py-2 border border-zinc-700">Email</th>
                       <th className="px-4 py-2 border border-zinc-700">CPF</th>
                       <th className="px-4 py-2 border border-zinc-700">RG</th>
@@ -128,6 +129,7 @@ export const ListMembers = () => {
                       <th className="px-4 py-2 border border-zinc-700">Membro Desde</th>
                       <th className="px-4 py-2 border border-zinc-700">Termos de Imagem</th>
                       <th className="px-4 py-2 border border-zinc-700">Carteira de Membro</th>
+                      <th className="px-4 py-2 border border-zinc-700">Cartas</th>
                       <th className="px-4 py-2 border border-zinc-700">Ações</th>
                     </tr>
                   </thead>

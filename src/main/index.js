@@ -10,8 +10,6 @@ import fs from "fs";
 import kill from "tree-kill";
 import { autoUpdater } from 'electron-updater'
 
-
-
 let backendProcess;
 let backendStarted = false;
 
@@ -41,7 +39,7 @@ async function runMigrations(dbPath) {
 
     log.info('Prisma bin path:', prismaBin)
 
-    const migrateProcess = spawn(prismaBin, ['migrate', 'deploy', '--schema', schemaPath], {
+    const migrateProcess = spawn(`"${prismaBin}"`, ['migrate', 'deploy', '--schema', `"${schemaPath}"`], {
       env,
       cwd: backendDir,
       stdio: ['inherit', 'pipe', 'pipe'],
@@ -279,7 +277,18 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  autoUpdater.checkForUpdatesAndNotify()
+
+  if (app.isPackaged) {
+    try {
+      autoUpdater.requestHeaders = {
+        Authorization: `token ${import.meta.env.VITE_GH_TOKEN}`
+      }
+      autoUpdater.checkForUpdatesAndNotify()
+    } catch (error) {
+      log.error('Erro ao verificar updates:', error)
+    }
+  }
+
   startBackend();
 
   // Set app user model id for windows
@@ -299,6 +308,10 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+})
+
+autoUpdater.on('error', (error) => {
+  log.error('AutoUpdater error:', error)
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

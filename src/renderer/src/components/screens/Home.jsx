@@ -12,8 +12,6 @@ import confetes from "../../assets/confetes.png"
 
 export const Home = () => {
 
-  const navigate = useNavigate();
-
   const [birthdayMembers, setBirthdayMembers] = useState([]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
