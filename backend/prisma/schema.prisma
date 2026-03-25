@@ -27,6 +27,7 @@ model Member {
   baptismDate DateTime?
   memberSince DateTime?
   imagePath String?
+  imagePublicId String?
   acceptTerms Boolean @default(false)
 
   createdAt DateTime @default(now())
