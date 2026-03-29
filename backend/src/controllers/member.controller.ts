@@ -59,10 +59,10 @@ export const create = async (req: Request, res: Response) => {
         }
       }
 
-      const { id, name, email } = req.body;
-      log('info', 'create', 'Criando membro no banco', { id, name, email });
+      const { id, name, email, birthDate, cpf, rg, baptismDate, memberSince, role, civilStatus, phone, acceptTerms } = req.body;
+      const acceptTermsValue = acceptTerms == 'true' ? true : false;
 
-      const member = await createMember({ id, name, email, imagePath: imageUrl, imagePublicId });
+      const member = await createMember({ id, name, email, birthDate, cpf, rg, baptismDate, memberSince, role, civilStatus, phone, imagePath: imageUrl, imagePublicId, acceptTerms: acceptTermsValue });
       log('info', 'create', 'Membro criado com sucesso', { id: member.member?.id });
 
       res.status(201).json(member);
