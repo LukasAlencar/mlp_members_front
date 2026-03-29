@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --exec \"ts-node ./src/index.ts\"",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/index.js --external:@prisma/client --external:prisma --external:@mapbox/node-pre-gyp --external:mock-aws-s3 --external:aws-sdk --external:nock --external:bcrypt --external:sharp",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/index.js --external:@prisma/client --external:prisma --external:@mapbox/node-pre-gyp --external:mock-aws-s3 --external:aws-sdk --external:nock --external:bcrypt --external:sharp --external:better-sqlite3 --define:process.env.CLOUDINARY_CLOUD_NAME='\"${CLOUDINARY_CLOUD_NAME}\"' --define:process.env.CLOUDINARY_API_KEY='\"${CLOUDINARY_API_KEY}\"' --define:process.env.CLOUDINARY_API_SECRET='\"${CLOUDINARY_API_SECRET}\"'",
     "build:tsc": "tsc",
     "init": "init.bat",
     "create-admin": "node ./scripts/create-admin.js",
