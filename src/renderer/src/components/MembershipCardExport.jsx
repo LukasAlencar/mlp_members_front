@@ -1,8 +1,7 @@
 import { forwardRef } from "react";
-import FieldCard from "./FieldCard";
 import headerImg from "../assets/cabecalhocarteirinha.png";
-import { base_url } from "../services/config";
-import { formatCivilStatus, formatDatePTBR, formatRole } from './../utils/utils';
+import { formatCivilStatus, formatDatePTBR } from './../utils/utils';
+import FieldCardAlt from "./FieldCardAlt";
 
 const MembershipCardExport = forwardRef(({ member }, ref) => {
   return (
@@ -10,45 +9,39 @@ const MembershipCardExport = forwardRef(({ member }, ref) => {
       id="card"
       ref={ref}
       key={member.id}
-      className="w-[720px] h-[400px] bg-zinc-50 rounded-lg text-zinc-900 flex flex-col overflow-hidden"
+      className="w-[720px] h-[400px] rounded-lg relative bg-card-bg bg-center bg-cover text-zinc-900 flex flex-col overflow-hidden z-20"
     >
-      <header className="w-full h-1/2 flex items-center bg-zinc-900">
-        <div className="w-[70%] h-full flex items-center justify-center">
-          <img src={headerImg} alt="" />
+      <header className="w-full h-2/6 flex items-center pt-5">
+        <div className="w-full h-full flex items-start justify-center">
+          <img src={headerImg} alt="logo mlp" className="w-72 " />
         </div>
-        <div className="w-[30%] h-full flex items-center justify-center">
-          <div className="w-[150px] h-[200px] relative">
-            <div className="w-[150px] h-[200px] overflow-hidden rounded-lg border-2 border-zinc-800 bg-zinc-800 absolute top-10 left-0">
-              <img
-                src={`${base_url}userImages/${member.id}.png`}
-                alt="Carteirinha de membro"
-                className="w-full h-full rounded-lg"
-              />
-            </div>
-          </div>
-        </div>
+
       </header>
-      <main className="flex flex-col w-full h-1/2 gap-2 p-2 px-5">
-        <h1 className="font-bold text-2xl text-center font-sans text-zinc-900">
-          {formatRole(member.role).toUpperCase()}
-        </h1>
-        <div className="w-full h-full flex flex-col">
-          <div className="w-full flex gap-2 mb-3">
-            <FieldCard className="w-[60%] h-[40px]" label="Nome:" value={member.name} isExport/>
-            <FieldCard className="w-[20%] h-[40px]" label="Estado Civil:" value={formatCivilStatus(member.civilStatus)} isExport />
-            <FieldCard className="w-[20%] h-[40px]" label="Telefone:" value={member.phone} isExport />
+      <main className="flex w-full truncate h-full gap-2 py-5 px-10 ">
+        <div className="w-2/3 h-full flex flex-col justify-start items-start gap-1">
+          <div className="flex flex-col max-w-full truncate flex-1 h-full justify-center items-start gap-5">
+            <FieldCardAlt className="" label="Nome:" value={member.name} isExport />
+            <div className="flex justify-center gap-10 items-center">
+              <FieldCardAlt className="" label="CPF:" value={member.cpf} isExport />
+              <FieldCardAlt className="" label="Data de nasc.:" value={formatDatePTBR(member.birthDate)} isExport />
+            </div>
+            <FieldCardAlt className="" label="Estado Civil:" value={formatCivilStatus(member.civilStatus)} isExport />
           </div>
-          <div className="w-full flex gap-2 justify-around mt-5">
-            <FieldCard className="w-[23%] h-[40px]" label="RG:" value={member.rg} isExport />
-            <FieldCard className="w-[23%] h-[40px]" label="CPF:" value={member.cpf} isExport />
-            <FieldCard className="w-[18%] h-[40px]" label="Data Nascimento:" value={formatDatePTBR(member.birthDate)} isExport />
-            <FieldCard className="w-[18%] h-[40px]" label="Data Batismo:" value={formatDatePTBR(member.baptismDate)} isExport />
-            <FieldCard className="w-[18%] h-[40px]" label="Membro desde:" value={formatDatePTBR(member.memberSince)} isExport />
+        </div>
+        <div className="flex w-1/3 h-full justify-end">
+          <div className=" h-full flex items-center justify-center">
+            <div className="w-[90%] relative h-full flex items-center justify-center">
+              <div className="aspect-[3/4] rounded-lg border-2 border-zinc-800 bg-zinc-800">
+                <img src={member.imagePath} alt="Carteirinha de membro" className="w-full h-full rounded-lg" />
+              </div>
+            </div>
           </div>
         </div>
       </main>
     </div>
   );
 });
+
+
 
 export default MembershipCardExport;

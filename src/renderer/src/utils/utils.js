@@ -12,6 +12,14 @@ export const formatDatePTBR = (date) => {
     return `${day}/${month}/${year}`;
 }
 
+export const getValidityDate = (date) => {
+  const currentDate = new Date(date);
+  const fiveYears = currentDate.getFullYear() + 5;
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+
+  return `${month}/${fiveYears}`;
+}
+
 export const formatRole = (role) => {
   var role_lower = role.toLowerCase();
 
