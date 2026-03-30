@@ -11,7 +11,7 @@ import { incrementMemberRemoved } from "../repositories/statistics.repository";
 import cuid from "cuid";
 import cloudinary from "../config/cloudinary";
 
-const log = (level: 'info' | 'error' | 'warn', context: string, message: string, data?: any) => {
+export const log = (level: 'info' | 'error' | 'warn', context: string, message: string, data?: any) => {
   const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 23);
   const dataStr = data ? ` | ${JSON.stringify(data)}` : '';
   const line = `[${timestamp}] [${level}] [${context}] ${message}${dataStr}`;
